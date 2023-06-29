@@ -1,0 +1,65 @@
+version: "3.9"
+services:
+  dev:
+    container_name: hives-backend-dev
+    image: hives-backend:dev
+    build:
+      context: .
+      target: dev
+      dockerfile: ./Dockerfile
+    networks:
+      - hives-network
+    volumes:
+      - .:/develop
+    depends_on:
+      - phpmyadmin
+    ports:
+      - 3000:3000
+    tty: true
+
+  prod:
+    networks:
+      - hives-network
+      - nginx-proxy
+    depends_on:
+      - db
+    container_name: hives-backend
+    image: hives-backend:prod
+    build:
+      context: .
+      target: prod
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    restart: always
+    ports:
+      - 3000
+
+  db:
+    image: mariadb:lts
+    restart: always
+    networks:
+      - hives-network
+    env_file:
+      - .env
+    volumes:
+      - hives-volumes:/var/lib/mysql
+
+  phpmyadmin:
+    depends_on:
+      - db
+    networks:
+      - hives-network
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+
+volumes:
+  hives-volumes:
+
+
+networks:
+  hives-network:
+  nginx-proxy:
+    external: true
