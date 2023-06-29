@@ -1,6 +1,7 @@
 FROM node:lts-alpine as dev
-WORKDIR /develop
 RUN npm i -g @nestjs/cli
+USER node
+WORKDIR /develop
 EXPOSE 3000
 
 FROM node:lts-alpine as build
