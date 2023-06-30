@@ -1,7 +1,13 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { TokenPayload } from 'src/interfaces/TokenPayload';
 
 @Injectable()
 export class AuthService {
@@ -40,5 +46,34 @@ export class AuthService {
 
   activationCode(): number {
     return Math.floor(Math.random() * (10000 - 1000) + 1000);
+  }
+
+  async getUserIfRefreshTokenMatches(
+    refreshToken: string,
+    payload: TokenPayload,
+  ): Promise<TokenPayload> {
+    const refreshTokenDB = await this.prisma.user.findUnique({
+      select: {
+        refreshToken: true,
+      },
+      where: {
+        id: payload.sub,
+      },
+    });
+
+    if (!refreshTokenDB) {
+      throw new UnauthorizedException();
+    }
+
+    const isMatch = await bcrypt.compare(
+      refreshToken,
+      refreshTokenDB.refreshToken,
+    );
+
+    if (!isMatch) {
+      throw new ForbiddenException();
+    }
+
+    return payload;
   }
 }
