@@ -99,7 +99,7 @@ export class AuthService {
     return payload;
   }
 
-  private async generateToken(payload: TokenPayload): Promise<TokenDTO> {
+  async generateToken(payload: TokenPayload): Promise<TokenDTO> {
     const access_token = await this.jwtService.signAsync(
       {
         sub: payload.sub,

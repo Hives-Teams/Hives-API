@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -17,6 +18,8 @@ import {
 } from '@nestjs/swagger';
 import { TokenDTO } from './dto/Token.dto';
 import { JwtGuard } from 'src/jwt/guards/jwt.guard';
+import { TokenPayload } from 'src/interfaces/TokenPayload';
+import { JwtRefreshGuard } from 'src/jwt/guards/jwt-refresh-guard';
 
 @ApiTags('auth')
 @ApiBearerAuth()
@@ -37,6 +40,16 @@ export class AuthController {
   @Post('login')
   async login(@Body() user: CreateUserDTO): Promise<TokenDTO> {
     return await this.authService.login(user);
+  }
+
+  @ApiOkResponse({
+    type: TokenDTO,
+  })
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtRefreshGuard)
+  @Post('refresh')
+  async refresh(@Req() req: { user: TokenPayload }) {
+    return await this.authService.generateToken(req.user);
   }
 
   @UseGuards(JwtGuard)
