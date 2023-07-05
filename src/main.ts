@@ -8,7 +8,10 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
 
-  const config = new DocumentBuilder().setTitle('Hives Backend').build();
+  const config = new DocumentBuilder()
+    .setTitle('Hives Backend')
+    .addBearerAuth()
+    .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, document);
 

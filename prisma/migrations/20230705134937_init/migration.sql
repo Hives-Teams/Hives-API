@@ -3,7 +3,7 @@ CREATE TABLE `User` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `email` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
-    `refreshToken` VARCHAR(191) NOT NULL,
+    `refreshToken` VARCHAR(191) NULL,
     `activate` BOOLEAN NOT NULL DEFAULT false,
     `codeActivate` INTEGER NULL,
 
