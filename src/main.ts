@@ -13,8 +13,10 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('swagger', app, document);
+  if (process.env.NODE_ENV != 'production') {
+    SwaggerModule.setup('swagger', app, document);
+  }
 
-  await app.listen(3000);
+  await app.listen(process.env.PORT);
 }
 bootstrap();

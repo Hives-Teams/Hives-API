@@ -1,5 +1,5 @@
 FROM node:18-alpine as dev
-RUN npm i -g @nestjs/cli
+RUN npm i -g @nestjs/cli@10.1.7
 USER node
 WORKDIR /develop
 EXPOSE 3000
@@ -12,6 +12,7 @@ RUN npm run build
 
 FROM node:18-alpine as prod
 WORKDIR /app
+ENV NODE_ENV=production
 COPY --from=build /build/package.json /app
 COPY --from=build /build/package-lock.json /app
 COPY --from=build /build/dist /app/dist
