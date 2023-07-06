@@ -3,11 +3,11 @@ name: develop
 on:
   push:
     branches:
-    - feature/action_dev
+    - develop
   
 jobs:        
     
-  Deploy:
+  develop:
     runs-on: ubuntu-latest
     
     steps:
