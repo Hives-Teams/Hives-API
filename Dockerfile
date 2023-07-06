@@ -12,6 +12,7 @@ RUN npm run build
 
 FROM node:18-alpine as prod
 WORKDIR /app
+ENV NODE_ENV=production
 COPY --from=build /build/package.json /app
 COPY --from=build /build/package-lock.json /app
 COPY --from=build /build/dist /app/dist
