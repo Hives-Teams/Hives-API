@@ -13,7 +13,7 @@ jobs:
     steps:
     - name: Copy repository
       uses: actions/checkout@v3
-    - uses: akhileshns/heroku-deploy@v3.12.14 # This is the action
+    - uses: akhileshns/heroku-deploy@v3.12.14
       with:
         heroku_api_key: ${{secrets.HEROKU_API_KEY}}
         heroku_app_name: ${{secrets.HEROKU_NAME}}
@@ -21,12 +21,5 @@ jobs:
         usedocker: true
         docker_build_args: |
             NODE_ENV
-            SECRET_KEY
-            DATABASE_URL
-            JWT
-            REFRESH
       env:
         NODE_ENV: production
-        DATABASE_URL: ${{secrets.DATABASE_URL_DEVELOP}}
-        JWT: ${{secrets.JWT_DEVELOP}}
-        REFRESH: ${{secrets.REFRESH_DEVELOP}}
