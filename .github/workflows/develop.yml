@@ -19,7 +19,3 @@ jobs:
         heroku_app_name: ${{secrets.HEROKU_NAME}}
         heroku_email: ${{secrets.HEROKU_EMAIL}}
         usedocker: true
-        docker_build_args: |
-            NODE_ENV
-      env:
-        NODE_ENV: production
