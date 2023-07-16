@@ -54,7 +54,7 @@ export class AuthController {
 
   @UseGuards(JwtGuard)
   @Get('test')
-  async test(): Promise<any> {
+  async test(): Promise<string> {
     return 'salut';
   }
 }
