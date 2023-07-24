@@ -8,7 +8,7 @@ EXPOSE 9229
 FROM node:18-alpine as build
 WORKDIR /build
 COPY . .
-RUN npm ci
+RUN npm install
 RUN npm run build
 
 FROM node:18-alpine as prod
