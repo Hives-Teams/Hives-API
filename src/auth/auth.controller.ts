@@ -55,6 +55,7 @@ export class AuthController {
   @UseGuards(JwtGuard)
   @Get('test')
   async test(): Promise<string> {
-    return 'salut';
+    const test = 'salut';
+    return test;
   }
 }
