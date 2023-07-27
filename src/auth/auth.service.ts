@@ -74,6 +74,8 @@ export class AuthService {
     refreshToken: string,
     payload: TokenPayload,
   ): Promise<TokenPayload> {
+    console.log("refresh token", refreshToken);
+    console.log("payload", payload);
     const refreshTokenDB = await this.prisma.user.findUnique({
       select: {
         refreshToken: true,
@@ -113,6 +115,7 @@ export class AuthService {
     const refresh_token = await this.jwtService.signAsync(
       {
         sub: payload.sub,
+        test: "salut"
       },
       {
         secret: process.env.REFRESH,
