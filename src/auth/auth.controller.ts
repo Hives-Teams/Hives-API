@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Post,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -20,6 +21,7 @@ import { TokenDTO } from './dto/Token.dto';
 import { JwtGuard } from 'src/jwt/guards/jwt.guard';
 import { TokenPayload } from 'src/interfaces/TokenPayload';
 import { JwtRefreshGuard } from 'src/jwt/guards/jwt-refresh-guard';
+import { Response } from 'express';
 
 @ApiTags('auth')
 @ApiBearerAuth()
@@ -38,18 +40,38 @@ export class AuthController {
   })
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  async login(@Body() user: CreateUserDTO): Promise<TokenDTO> {
-    return await this.authService.login(user);
+  async login(
+    @Body() user: CreateUserDTO,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<string> {
+    const token = await this.authService.login(user);
+    response.cookie('refresh-token', token.refresh_token, {
+      httpOnly: true,
+      secure: true,
+    });
+    return token.access_token;
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('logout')
+  async logout(@Res({ passthrough: true }) response: Response): Promise<void> {
+    response.clearCookie('refresh-token');
+    return null;
   }
 
   @ApiOkResponse({
-    type: TokenDTO,
+    type: String,
   })
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtRefreshGuard)
   @Post('refresh')
-  async refresh(@Req() req: { user: TokenPayload }) {
-    return await this.authService.generateToken(req.user);
+  async refresh(@Req() req: { user: TokenPayload }, @Res({ passthrough: true }) response: Response): Promise<string> {
+    const token = await this.authService.generateToken(req.user);
+    response.cookie('refresh-token', token.refresh_token, {
+      httpOnly: true,
+      secure: true,
+    });
+    return token.access_token;
   }
 
   @UseGuards(JwtGuard)
