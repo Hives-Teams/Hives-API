@@ -11,6 +11,10 @@ async function main() {
         id: 2,
         name: 'instagram',
       },
+      {
+        id: 3,
+        name: 'linkedin',
+      },
     ],
     skipDuplicates: true,
   });

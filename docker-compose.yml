@@ -30,6 +30,8 @@ services:
       context: .
       target: prod
       dockerfile: ./Dockerfile
+      args:
+        - db=${DATABASE_URL}
     environment:
       - JWT=${JWT}
       - REFRESH=${REFRESH}
