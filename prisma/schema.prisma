@@ -32,12 +32,12 @@ model Board {
   name   String
   user   User   @relation(fields: [idUser], references: [id])
   idUser Int
-  Tuto Tuto[]
+  Tuto   Tuto[]
 }
 
 model Tuto {
-  id    Int    @id @default(autoincrement())
-  title String
-  board Board @relation(fields: [idBoard], references: [id])
+  id      Int    @id @default(autoincrement())
+  title   String
+  board   Board  @relation(fields: [idBoard], references: [id])
   idBoard Int
 }
