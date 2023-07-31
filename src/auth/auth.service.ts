@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { TokenPayload } from 'src/interfaces/TokenPayload';
 import { JwtService } from '@nestjs/jwt';
 import { TokenDTO } from './dto/Token.dto';
+import { ConnectUserDTO } from './dto/connect-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -29,13 +30,15 @@ export class AuthService {
     await this.prisma.user.create({
       data: {
         email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastname,
         password: hashpwd,
         codeActivate: activationCode,
       },
     });
   }
 
-  async login(user: CreateUserDTO): Promise<TokenDTO> {
+  async login(user: ConnectUserDTO): Promise<TokenDTO> {
     const userResult = await this.prisma.user.findUnique({
       where: {
         email: user.email,
@@ -74,8 +77,8 @@ export class AuthService {
     refreshToken: string,
     payload: TokenPayload,
   ): Promise<TokenPayload> {
-    console.log("refresh token", refreshToken);
-    console.log("payload", payload);
+    console.log('refresh token', refreshToken);
+    console.log('payload', payload);
     const refreshTokenDB = await this.prisma.user.findUnique({
       select: {
         refreshToken: true,
@@ -115,7 +118,7 @@ export class AuthService {
     const refresh_token = await this.jwtService.signAsync(
       {
         sub: payload.sub,
-        test: "salut"
+        test: 'salut',
       },
       {
         secret: process.env.REFRESH,
