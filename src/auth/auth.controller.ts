@@ -17,11 +17,11 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { TokenDTO } from './dto/Token.dto';
 import { JwtGuard } from 'src/jwt/guards/jwt.guard';
 import { TokenPayload } from 'src/interfaces/TokenPayload';
 import { JwtRefreshGuard } from 'src/jwt/guards/jwt-refresh-guard';
 import { Response } from 'express';
+import { ConnectUserDTO } from './dto/connect-user.dto';
 
 @ApiTags('auth')
 @ApiBearerAuth()
@@ -36,12 +36,12 @@ export class AuthController {
   }
 
   @ApiOkResponse({
-    type: TokenDTO,
+    type: String,
   })
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(
-    @Body() user: CreateUserDTO,
+    @Body() user: ConnectUserDTO,
     @Res({ passthrough: true }) response: Response,
   ): Promise<string> {
     const token = await this.authService.login(user);
@@ -65,7 +65,10 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtRefreshGuard)
   @Post('refresh')
-  async refresh(@Req() req: { user: TokenPayload }, @Res({ passthrough: true }) response: Response): Promise<string> {
+  async refresh(
+    @Req() req: { user: TokenPayload },
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<string> {
     const token = await this.authService.generateToken(req.user);
     response.cookie('refresh-token', token.refresh_token, {
       httpOnly: true,

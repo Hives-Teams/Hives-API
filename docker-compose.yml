@@ -34,6 +34,7 @@ services:
       - JWT=${JWT}
       - REFRESH=${REFRESH}
       - DATABASE_URL=${DATABASE_URL}
+      - PORT=${PORT}
     restart: always
     ports:
       - 3000:3000

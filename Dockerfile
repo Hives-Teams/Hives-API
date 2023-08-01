@@ -20,4 +20,4 @@ COPY --from=build /build/dist /app/dist
 COPY --from=build /build/prisma /app/prisma
 RUN npm ci
 EXPOSE 3000
-CMD [ "npm", "run", "start:migrate:prod" ]
+CMD [ "npm", "run", "start:prod:migration" ]
