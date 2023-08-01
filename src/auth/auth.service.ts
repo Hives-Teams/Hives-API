@@ -30,8 +30,12 @@ export class AuthService {
     await this.prisma.user.create({
       data: {
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastname,
+        firstName:
+          user.firstName.charAt(0).toUpperCase() +
+          user.firstName.slice(1).toLowerCase(),
+        lastName:
+          user.lastname.charAt(0).toUpperCase() +
+          user.lastname.slice(1).toLowerCase(),
         password: hashpwd,
         codeActivate: activationCode,
       },
