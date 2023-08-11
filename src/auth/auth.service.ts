@@ -7,7 +7,7 @@ import {
 import { CreateUserDTO } from './dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { TokenPayload } from 'src/interfaces/TokenPayload';
+import { TokenPayloadInterface } from 'src/interfaces/TokenPayload.interface';
 import { JwtService } from '@nestjs/jwt';
 import { TokenDTO } from './dto/Token.dto';
 import { ConnectUserDTO } from './dto/connect-user.dto';
@@ -55,7 +55,7 @@ export class AuthService {
     if (!compare) {
       throw new ForbiddenException('Mot de passe incorrect');
     }
-    const payload: TokenPayload = {
+    const payload: TokenPayloadInterface = {
       sub: userResult.id,
     };
     return await this.generateToken(payload);
@@ -79,8 +79,8 @@ export class AuthService {
 
   async getUserIfRefreshTokenMatches(
     refreshToken: string,
-    payload: TokenPayload,
-  ): Promise<TokenPayload> {
+    payload: TokenPayloadInterface,
+  ): Promise<TokenPayloadInterface> {
     console.log('refresh token', refreshToken);
     console.log('payload', payload);
     const refreshTokenDB = await this.prisma.user.findUnique({
@@ -108,7 +108,7 @@ export class AuthService {
     return payload;
   }
 
-  async generateToken(payload: TokenPayload): Promise<TokenDTO> {
+  async generateToken(payload: TokenPayloadInterface): Promise<TokenDTO> {
     const access_token = await this.jwtService.signAsync(
       {
         sub: payload.sub,

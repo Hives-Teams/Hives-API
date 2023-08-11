@@ -34,6 +34,7 @@ CREATE TABLE `Board` (
 CREATE TABLE `Tuto` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `title` VARCHAR(191) NOT NULL,
+    `social` VARCHAR(191) NOT NULL,
     `idBoard` INTEGER NOT NULL,
 
     PRIMARY KEY (`id`)

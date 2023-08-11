@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { BoardDTO } from './dto/board.dto';
 import { JwtGuard } from 'src/jwt/guards/jwt.guard';
-import { TokenPayload } from 'src/interfaces/TokenPayload';
+import { TokenPayloadInterface } from 'src/interfaces/TokenPayload.interface';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -23,14 +23,16 @@ export class BoardController {
     isArray: true,
   })
   @Get()
-  async getBoard(@Req() req: { user: TokenPayload }): Promise<BoardDTO[]> {
+  async getBoard(
+    @Req() req: { user: TokenPayloadInterface },
+  ): Promise<BoardDTO[]> {
     return await this.boardService.getBoard(req.user.sub);
   }
 
   @ApiCreatedResponse()
   @Post()
   async setBoard(
-    @Req() req: { user: TokenPayload },
+    @Req() req: { user: TokenPayloadInterface },
     @Body() board: CreateBoardDTO,
   ): Promise<void> {
     return await this.boardService.setBoard(req.user.sub, board.name);

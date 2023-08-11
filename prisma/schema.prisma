@@ -38,6 +38,8 @@ model Board {
 model Tuto {
   id      Int    @id @default(autoincrement())
   title   String
+  social  String
+  URL     String
   board   Board  @relation(fields: [idBoard], references: [id])
   idBoard Int
 }

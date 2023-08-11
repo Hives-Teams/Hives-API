@@ -18,7 +18,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtGuard } from 'src/jwt/guards/jwt.guard';
-import { TokenPayload } from 'src/interfaces/TokenPayload';
+import { TokenPayloadInterface } from 'src/interfaces/TokenPayload.interface';
 import { JwtRefreshGuard } from 'src/jwt/guards/jwt-refresh-guard';
 import { Response } from 'express';
 import { ConnectUserDTO } from './dto/connect-user.dto';
@@ -66,7 +66,7 @@ export class AuthController {
   @UseGuards(JwtRefreshGuard)
   @Post('refresh')
   async refresh(
-    @Req() req: { user: TokenPayload },
+    @Req() req: { user: TokenPayloadInterface },
     @Res({ passthrough: true }) response: Response,
   ): Promise<string> {
     const token = await this.authService.generateToken(req.user);
