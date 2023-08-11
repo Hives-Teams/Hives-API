@@ -1,10 +1,10 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Cache } from 'cache-manager';
 import { CreateTutoDTO } from './dto/create-tuto.dto';
 import { SocialInterface } from 'src/interfaces/Social.interface';
-import socialNetworkDetector from 'src/social-network-detector/socialNetworkDetector';
+import detectSocialNetwork from 'detect-social-network';
 
 @Injectable()
 export class TutoService {
@@ -17,13 +17,14 @@ export class TutoService {
   }
 
   async setTutos(id: number, createTuto: CreateTutoDTO): Promise<void> {
-    const socialTitle = socialNetworkDetector(createTuto.url);
-    const socialList: SocialInterface[] = this.social;
-    const socialCompatibility = socialList.find((s) => {
-      s.name == socialTitle;
-    });
-    if (!socialCompatibility)
-      throw new BadRequestException('Réseau social non compatible');
+    const test = detectSocialNetwork(createTuto.url);
+    console.log(test);
+    // const socialList: SocialInterface[] = this.social;
+    // const socialCompatibility = socialList.find((s) => {
+    //   s.name == socialTitle;
+    // });
+    // if (!socialCompatibility)
+    //   throw new BadRequestException('Réseau social non compatible');
     console.log('compatible');
   }
 
