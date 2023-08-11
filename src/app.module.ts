@@ -8,7 +8,6 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { BoardModule } from './board/board.module';
 import { TutoModule } from './tuto/tuto.module';
-import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   controllers: [AppController],
@@ -26,9 +25,6 @@ import { CacheModule } from '@nestjs/cache-manager';
     ThrottlerModule.forRoot({
       ttl: 60,
       limit: 10,
-    }),
-    CacheModule.register({
-      isGlobal: true,
     }),
     BoardModule,
     TutoModule,
