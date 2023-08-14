@@ -7,7 +7,7 @@ export class BoardService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getBoard(id: number): Promise<BoardDTO[]> {
-    const data = await this.prisma.board.findMany({
+    const data: BoardDTO[] = await this.prisma.board.findMany({
       select: {
         id: true,
         name: true,
@@ -16,7 +16,7 @@ export class BoardService {
         idUser: id,
       },
     });
-    return data as BoardDTO[];
+    return data;
   }
 
   async setBoard(id: number, name: string): Promise<void> {

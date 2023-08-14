@@ -1,18 +1,30 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTutoDTO } from './dto/create-tuto.dto';
 import { SocialInterface } from 'src/interfaces/Social.interface';
 import detectSocialNetwork from 'detect-social-network';
+import { TutoDTO } from './dto/tuto.dto';
 
 @Injectable()
 export class TutoService {
   social: SocialInterface[];
   constructor(private readonly prisma: PrismaService) {
     this.listSocial();
+  }
+
+  async getTuto(id: number, idBoard: number): Promise<TutoDTO[]> {
+    await this.boardBelongToUser(id, idBoard);
+
+    const tuto: TutoDTO[] = await this.prisma.tuto.findMany({
+      where: {
+        idBoard: idBoard,
+      },
+    });
+    return tuto;
   }
 
   async setTutos(id: number, createTuto: CreateTutoDTO): Promise<void> {
@@ -25,20 +37,7 @@ export class TutoService {
     if (!socialCompatibility)
       throw new BadRequestException('Réseau social non compatible');
 
-    const user = await this.prisma.board.findUnique({
-      where: {
-        id: createTuto.board,
-        idUser: id,
-      },
-      include: {
-        user: true,
-      },
-    });
-
-    if (!user)
-      throw new UnauthorizedException(
-        'Board non existant pour cette utilisateur',
-      );
+    await this.boardBelongToUser(id, createTuto.board);
 
     await this.prisma.tuto.create({
       data: {
@@ -52,6 +51,24 @@ export class TutoService {
 
   private async listSocial(): Promise<void> {
     this.social = await this.prisma.socialNetwork.findMany();
+  }
+
+  private async boardBelongToUser(
+    idUser: number,
+    idBoard: number,
+  ): Promise<void> {
+    const user = await this.prisma.board.findUnique({
+      where: {
+        id: idBoard,
+        idUser: idUser,
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    if (!user)
+      throw new ForbiddenException('Board non existant pour cette utilisateur');
   }
 
   private isValidUrl(url: string): boolean {
