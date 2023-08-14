@@ -6,5 +6,5 @@ export class CreateTutoDTO {
   @ApiProperty()
   url: string;
   @ApiProperty()
-  board: string;
+  board: number;
 }

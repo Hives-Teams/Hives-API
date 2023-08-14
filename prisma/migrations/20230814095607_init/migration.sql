@@ -34,7 +34,8 @@ CREATE TABLE `Board` (
 CREATE TABLE `Tuto` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `title` VARCHAR(191) NOT NULL,
-    `social` VARCHAR(191) NOT NULL,
+    `idSocial` INTEGER NOT NULL,
+    `URL` VARCHAR(191) NOT NULL,
     `idBoard` INTEGER NOT NULL,
 
     PRIMARY KEY (`id`)
@@ -42,6 +43,9 @@ CREATE TABLE `Tuto` (
 
 -- AddForeignKey
 ALTER TABLE `Board` ADD CONSTRAINT `Board_idUser_fkey` FOREIGN KEY (`idUser`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Tuto` ADD CONSTRAINT `Tuto_idSocial_fkey` FOREIGN KEY (`idSocial`) REFERENCES `SocialNetwork`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Tuto` ADD CONSTRAINT `Tuto_idBoard_fkey` FOREIGN KEY (`idBoard`) REFERENCES `Board`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

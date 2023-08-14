@@ -13,6 +13,7 @@ datasource db {
 model SocialNetwork {
   id   Int    @id
   name String
+  Tuto Tuto[]
 }
 
 model User {
@@ -36,10 +37,11 @@ model Board {
 }
 
 model Tuto {
-  id      Int    @id @default(autoincrement())
-  title   String
-  social  String
-  URL     String
-  board   Board  @relation(fields: [idBoard], references: [id])
-  idBoard Int
+  id             Int           @id @default(autoincrement())
+  title          String
+  SocialNetworks SocialNetwork @relation(fields: [idSocial], references: [id])
+  idSocial       Int
+  URL            String
+  board          Board         @relation(fields: [idBoard], references: [id])
+  idBoard        Int
 }
