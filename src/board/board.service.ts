@@ -1,6 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { BoardDTO } from './dto/board.dto';
+import { CreateInBoardDTO } from './dto/create-in-board.dto';
 
 @Injectable()
 export class BoardService {
@@ -13,7 +18,14 @@ export class BoardService {
         name: true,
       },
       where: {
-        idUser: id,
+        AND: [
+          {
+            idUser: id,
+          },
+          {
+            InBoard: null,
+          },
+        ],
       },
     });
     return data;
@@ -30,5 +42,34 @@ export class BoardService {
     } catch (error) {
       throw new BadRequestException(error);
     }
+  }
+
+  async setInBoard(
+    id: number,
+    createSubBoard: CreateInBoardDTO,
+  ): Promise<void> {
+    const board = await this.prisma.board.findFirst({
+      where: {
+        AND: [
+          {
+            id: createSubBoard.idBoard,
+          },
+          {
+            idUser: id,
+          },
+        ],
+      },
+    });
+
+    if (!board)
+      throw new ForbiddenException('Board non existant pour cette utilisateur');
+
+    await this.prisma.board.create({
+      data: {
+        name: createSubBoard.name,
+        InBoard: createSubBoard.idBoard,
+        idUser: id,
+      },
+    });
   }
 }

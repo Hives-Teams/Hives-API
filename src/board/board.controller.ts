@@ -10,6 +10,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CreateBoardDTO } from './dto/create-board.dto';
+import { CreateInBoardDTO } from './dto/create-in-board.dto';
 
 @UseGuards(JwtGuard)
 @ApiTags('board')
@@ -36,5 +37,14 @@ export class BoardController {
     @Body() board: CreateBoardDTO,
   ): Promise<void> {
     return await this.boardService.setBoard(req.user.sub, board.name);
+  }
+
+  @ApiCreatedResponse()
+  @Post('inboard')
+  async setInBoard(
+    @Req() req: { user: TokenPayloadInterface },
+    @Body() board: CreateInBoardDTO,
+  ): Promise<void> {
+    return await this.boardService.setInBoard(req.user.sub, board);
   }
 }
