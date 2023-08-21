@@ -29,11 +29,12 @@ model User {
 }
 
 model Board {
-  id     Int    @id @default(autoincrement())
-  name   String
-  user   User   @relation(fields: [idUser], references: [id])
-  idUser Int
-  Tuto   Tuto[]
+  id       Int    @id @default(autoincrement())
+  InBoard Int?
+  name     String
+  user     User   @relation(fields: [idUser], references: [id])
+  idUser   Int
+  Tuto     Tuto[]
 }
 
 model Tuto {
