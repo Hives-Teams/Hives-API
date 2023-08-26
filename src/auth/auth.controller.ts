@@ -6,7 +6,6 @@ import {
   HttpStatus,
   Post,
   Req,
-  Res,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -20,9 +19,8 @@ import {
 import { JwtGuard } from 'src/jwt/guards/jwt.guard';
 import { TokenPayloadInterface } from 'src/interfaces/TokenPayload.interface';
 import { JwtRefreshGuard } from 'src/jwt/guards/jwt-refresh-guard';
-import { Response } from 'express';
 import { ConnectUserDTO } from './dto/connect-user.dto';
-import { AccessTokenDTO } from './dto/access-token.dto';
+import { TokenDTO } from './dto/token.dto';
 
 @ApiTags('auth')
 @ApiBearerAuth()
@@ -37,29 +35,12 @@ export class AuthController {
   }
 
   @ApiOkResponse({
-    type: AccessTokenDTO,
+    type: TokenDTO,
   })
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  async login(
-    @Body() user: ConnectUserDTO,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<AccessTokenDTO> {
-    const token = await this.authService.login(user);
-    response.cookie('refresh-token', token.refresh_token, {
-      httpOnly: true,
-      secure: true,
-    });
-    return {
-      access_token: token.access_token,
-    };
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @Post('logout')
-  async logout(@Res({ passthrough: true }) response: Response): Promise<void> {
-    response.clearCookie('refresh-token');
-    return null;
+  async login(@Body() user: ConnectUserDTO): Promise<TokenDTO> {
+    return await this.authService.login(user);
   }
 
   @ApiOkResponse({
@@ -68,15 +49,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtRefreshGuard)
   @Post('refresh')
-  async refresh(
-    @Req() req: { user: TokenPayloadInterface },
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<string> {
+  async refresh(@Req() req: { user: TokenPayloadInterface }): Promise<string> {
     const token = await this.authService.generateToken(req.user);
-    response.cookie('refresh-token', token.refresh_token, {
-      httpOnly: true,
-      secure: true,
-    });
     return token.access_token;
   }
 
