@@ -22,6 +22,7 @@ import { TokenPayloadInterface } from 'src/interfaces/TokenPayload.interface';
 import { JwtRefreshGuard } from 'src/jwt/guards/jwt-refresh-guard';
 import { Response } from 'express';
 import { ConnectUserDTO } from './dto/connect-user.dto';
+import { AccessTokenDTO } from './dto/access-token.dto';
 
 @ApiTags('auth')
 @ApiBearerAuth()
@@ -36,20 +37,22 @@ export class AuthController {
   }
 
   @ApiOkResponse({
-    type: String,
+    type: AccessTokenDTO,
   })
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(
     @Body() user: ConnectUserDTO,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<string> {
+  ): Promise<AccessTokenDTO> {
     const token = await this.authService.login(user);
     response.cookie('refresh-token', token.refresh_token, {
       httpOnly: true,
       secure: true,
     });
-    return token.access_token;
+    return {
+      access_token: token.access_token,
+    };
   }
 
   @HttpCode(HttpStatus.OK)
