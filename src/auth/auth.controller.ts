@@ -44,14 +44,15 @@ export class AuthController {
   }
 
   @ApiOkResponse({
-    type: String,
+    type: TokenDTO,
   })
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtRefreshGuard)
   @Post('refresh')
-  async refresh(@Req() req: { user: TokenPayloadInterface }): Promise<string> {
-    const token = await this.authService.generateToken(req.user);
-    return token.access_token;
+  async refresh(
+    @Req() req: { user: TokenPayloadInterface },
+  ): Promise<TokenDTO> {
+    return await this.authService.generateToken(req.user);
   }
 
   @UseGuards(JwtGuard)
