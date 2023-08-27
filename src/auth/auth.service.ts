@@ -9,8 +9,9 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { TokenPayloadInterface } from 'src/interfaces/TokenPayload.interface';
 import { JwtService } from '@nestjs/jwt';
-import { TokenDTO } from './dto/Token.dto';
+import { TokenDTO } from './dto/token.dto';
 import { ConnectUserDTO } from './dto/connect-user.dto';
+import { createHash } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -81,8 +82,6 @@ export class AuthService {
     refreshToken: string,
     payload: TokenPayloadInterface,
   ): Promise<TokenPayloadInterface> {
-    console.log('refresh token', refreshToken);
-    console.log('payload', payload);
     const refreshTokenDB = await this.prisma.user.findUnique({
       select: {
         refreshToken: true,
@@ -96,10 +95,9 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const isMatch = await bcrypt.compare(
-      refreshToken,
-      refreshTokenDB.refreshToken,
-    );
+    const hash = createHash('sha256').update(refreshToken).digest('hex');
+
+    const isMatch = await bcrypt.compare(hash, refreshTokenDB.refreshToken);
 
     if (!isMatch) {
       throw new ForbiddenException();
@@ -130,8 +128,10 @@ export class AuthService {
       },
     );
 
+    const hash = createHash('sha256').update(refresh_token).digest('hex');
+
     const refreshTokenHashed = await bcrypt.hash(
-      refresh_token,
+      hash,
       parseInt(process.env.SALT),
     );
 

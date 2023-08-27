@@ -1,5 +1,5 @@
 FROM node:18-alpine as dev
-RUN npm i -g @nestjs/cli@10.1.12
+RUN npm i -g @nestjs/cli@10.1.16
 USER node
 WORKDIR /develop
 EXPOSE 3000
