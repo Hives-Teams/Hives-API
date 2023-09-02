@@ -8,6 +8,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { BoardModule } from './board/board.module';
 import { TutoModule } from './tuto/tuto.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   controllers: [AppController],
@@ -19,15 +20,16 @@ import { TutoModule } from './tuto/tuto.module';
     },
   ],
   imports: [
-    AuthModule,
-    PrismaModule,
     ConfigModule.forRoot(),
     ThrottlerModule.forRoot({
       ttl: 60,
       limit: 10,
     }),
+    AuthModule,
+    PrismaModule,
     BoardModule,
     TutoModule,
+    MailModule,
   ],
 })
 export class AppModule {}

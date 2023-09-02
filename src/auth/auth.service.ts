@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -12,12 +13,14 @@ import { JwtService } from '@nestjs/jwt';
 import { TokenDTO } from './dto/token.dto';
 import { ConnectUserDTO } from './dto/connect-user.dto';
 import { createHash } from 'crypto';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async register(user: CreateUserDTO): Promise<void> {
@@ -44,6 +47,12 @@ export class AuthService {
         codeActivate: activationCode,
       },
     });
+
+    try {
+      await this.mailService.sendConfirmationMail(user.email, activationCode);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   async login(user: ConnectUserDTO): Promise<TokenDTO> {
