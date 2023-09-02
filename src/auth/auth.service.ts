@@ -26,8 +26,11 @@ export class AuthService {
       throw new ConflictException('Cet email est déjà associé à un compte');
     }
     const salt = await bcrypt.genSalt(10);
+
     const hashpwd = await bcrypt.hash(user.password, salt);
+
     const activationCode = this.activationCode();
+
     await this.prisma.user.create({
       data: {
         email: user.email,
@@ -49,16 +52,18 @@ export class AuthService {
         email: user.email,
       },
     });
-    if (!userResult) {
-      throw new ForbiddenException("Ce compte n'existe pas");
-    }
+
+    if (!userResult) throw new ForbiddenException("Ce compte n'existe pas");
+
     const compare = await bcrypt.compare(user.password, userResult.password);
-    if (!compare) {
-      throw new ForbiddenException('Mot de passe incorrect');
-    }
+
+    if (!compare) throw new ForbiddenException('Mot de passe incorrect');
+
     const payload: TokenPayloadInterface = {
       sub: userResult.id,
+      email: userResult.email,
     };
+
     return await this.generateToken(payload);
   }
 
@@ -68,9 +73,9 @@ export class AuthService {
         email: email,
       },
     });
-    if (user) {
-      return true;
-    }
+
+    if (user) return true;
+
     return false;
   }
 
@@ -106,27 +111,27 @@ export class AuthService {
     return payload;
   }
 
-  async generateToken(payload: TokenPayloadInterface): Promise<TokenDTO> {
-    const access_token = await this.jwtService.signAsync(
-      {
-        sub: payload.sub,
+  async userIsActivated(id: number): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: id,
+        activate: true,
       },
-      {
-        secret: process.env.JWT,
-        expiresIn: '30m',
-      },
-    );
+    });
 
-    const refresh_token = await this.jwtService.signAsync(
-      {
-        sub: payload.sub,
-        test: 'salut',
-      },
-      {
-        secret: process.env.REFRESH,
-        expiresIn: '7d',
-      },
-    );
+    if (!user) throw new ForbiddenException('Compte non activé');
+  }
+
+  async generateToken(payload: TokenPayloadInterface): Promise<TokenDTO> {
+    const access_token = await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT,
+      expiresIn: '30m',
+    });
+
+    const refresh_token = await this.jwtService.signAsync(payload, {
+      secret: process.env.REFRESH,
+      expiresIn: '7d',
+    });
 
     const hash = createHash('sha256').update(refresh_token).digest('hex');
 
