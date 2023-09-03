@@ -34,7 +34,7 @@ export class AuthService {
 
     const activationCode = this.activationCode();
 
-    await this.prisma.user.create({
+    const newUser = await this.prisma.user.create({
       data: {
         email: user.email,
         firstName:
@@ -51,6 +51,11 @@ export class AuthService {
     try {
       await this.mailService.sendConfirmationMail(user.email, activationCode);
     } catch (error) {
+      await this.prisma.user.delete({
+        where: {
+          id: newUser.id,
+        },
+      });
       throw new BadRequestException(error);
     }
   }
