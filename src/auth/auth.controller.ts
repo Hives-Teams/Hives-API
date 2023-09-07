@@ -21,6 +21,8 @@ import { TokenPayloadInterface } from 'src/interfaces/TokenPayload.interface';
 import { JwtRefreshGuard } from 'src/jwt/guards/jwt-refresh-guard';
 import { ConnectUserDTO } from './dto/connect-user.dto';
 import { TokenDTO } from './dto/token.dto';
+import { ActivationCodeDTO } from './dto/activation-code.dto';
+import { IdUserDTO } from './dto/id-user.dto';
 
 @ApiTags('auth')
 @ApiBearerAuth()
@@ -28,10 +30,20 @@ import { TokenDTO } from './dto/token.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @ApiCreatedResponse()
+  @ApiCreatedResponse({
+    type: IdUserDTO,
+  })
   @Post('register')
-  async register(@Body() user: CreateUserDTO): Promise<void> {
+  async register(@Body() user: CreateUserDTO): Promise<IdUserDTO> {
     return await this.authService.register(user);
+  }
+
+  @ApiCreatedResponse({
+    type: TokenDTO,
+  })
+  @Post('activation')
+  async activation(@Body() code: ActivationCodeDTO): Promise<TokenDTO> {
+    return await this.authService.activation(code);
   }
 
   @ApiOkResponse({

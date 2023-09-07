@@ -14,6 +14,8 @@ import { TokenDTO } from './dto/token.dto';
 import { ConnectUserDTO } from './dto/connect-user.dto';
 import { createHash } from 'crypto';
 import { MailService } from 'src/mail/mail.service';
+import { ActivationCodeDTO } from './dto/activation-code.dto';
+import { IdUserDTO } from './dto/id-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +25,7 @@ export class AuthService {
     private readonly mailService: MailService,
   ) {}
 
-  async register(user: CreateUserDTO): Promise<void> {
+  async register(user: CreateUserDTO): Promise<IdUserDTO> {
     const userExist = await this.userExist(user.email);
     if (userExist) {
       throw new ConflictException('Cet email est déjà associé à un compte');
@@ -50,6 +52,9 @@ export class AuthService {
 
     try {
       await this.mailService.sendConfirmationMail(user.email, activationCode);
+      return {
+        id: newUser.id,
+      };
     } catch (error) {
       await this.prisma.user.delete({
         where: {
@@ -60,6 +65,40 @@ export class AuthService {
     }
   }
 
+  async activation(code: ActivationCodeDTO): Promise<TokenDTO> {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        AND: [
+          {
+            id: code.id,
+          },
+          {
+            codeActivate: code.code,
+          },
+        ],
+      },
+    });
+
+    if (!user) throw new ForbiddenException('Code incorrect');
+
+    await this.prisma.user.update({
+      where: {
+        id: code.id,
+      },
+      data: {
+        codeActivate: null,
+        activate: true,
+      },
+    });
+
+    const payload: TokenPayloadInterface = {
+      sub: user.id,
+      email: user.email,
+    };
+
+    return await this.generateToken(payload);
+  }
+
   async login(user: ConnectUserDTO): Promise<TokenDTO> {
     const userResult = await this.prisma.user.findUnique({
       where: {
@@ -68,6 +107,12 @@ export class AuthService {
     });
 
     if (!userResult) throw new ForbiddenException("Ce compte n'existe pas");
+
+    if (!userResult.activate)
+      throw new ForbiddenException(
+        "Ce compte n'est pas activé",
+        userResult.id.toString(),
+      );
 
     const compare = await bcrypt.compare(user.password, userResult.password);
 
@@ -110,9 +155,7 @@ export class AuthService {
       },
     });
 
-    if (!refreshTokenDB) {
-      throw new UnauthorizedException();
-    }
+    if (!refreshTokenDB) throw new UnauthorizedException();
 
     const hash = createHash('sha256').update(refreshToken).digest('hex');
 

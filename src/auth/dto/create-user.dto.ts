@@ -19,6 +19,8 @@ export class CreateUserDTO {
 
   @ApiProperty()
   @IsNotEmpty()
-  @Matches(/^(?=.*[A-Z])(?=.*[\W_]).{8,}$/, { message: "8 caractères min, 1 majuscule et 1 caractère spécial" })
+  @Matches(/^(?=.*[A-Z])(?=.*[\W_]).{8,}$/, {
+    message: '8 caractères min, 1 majuscule et 1 caractère spécial',
+  })
   password: string;
 }
