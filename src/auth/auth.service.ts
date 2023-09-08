@@ -40,8 +40,8 @@ export class AuthService {
       data: {
         email: user.email,
         firstName:
-          user.firstName.charAt(0).toUpperCase() +
-          user.firstName.slice(1).toLowerCase(),
+          user.firstname.charAt(0).toUpperCase() +
+          user.firstname.slice(1).toLowerCase(),
         lastName:
           user.lastname.charAt(0).toUpperCase() +
           user.lastname.slice(1).toLowerCase(),
@@ -108,11 +108,7 @@ export class AuthService {
 
     if (!userResult) throw new ForbiddenException("Ce compte n'existe pas");
 
-    if (!userResult.activate)
-      throw new ForbiddenException(
-        "Ce compte n'est pas activé",
-        userResult.id.toString(),
-      );
+    if (!userResult.activate) throw new ForbiddenException(userResult.id);
 
     const compare = await bcrypt.compare(user.password, userResult.password);
 

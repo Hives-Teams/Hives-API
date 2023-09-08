@@ -10,7 +10,7 @@ export class CreateUserDTO {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  firstName: string;
+  firstname: string;
 
   @ApiProperty()
   @IsNotEmpty()
