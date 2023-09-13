@@ -176,12 +176,17 @@ export class AuthService {
   }
 
   async generateToken(payload: TokenPayloadInterface): Promise<TokenDTO> {
-    const access_token = await this.jwtService.signAsync(payload, {
+    const newPayloard: TokenPayloadInterface = {
+      email: payload.email,
+      sub: payload.sub,
+    };
+
+    const access_token = await this.jwtService.signAsync(newPayloard, {
       secret: process.env.JWT,
       expiresIn: '30m',
     });
 
-    const refresh_token = await this.jwtService.signAsync(payload, {
+    const refresh_token = await this.jwtService.signAsync(newPayloard, {
       secret: process.env.REFRESH,
       expiresIn: '7d',
     });
