@@ -21,10 +21,12 @@ import { MailModule } from './mail/mail.module';
   ],
   imports: [
     ConfigModule.forRoot(),
-    ThrottlerModule.forRoot({
-      ttl: 60,
-      limit: 10,
-    }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
     AuthModule,
     PrismaModule,
     BoardModule,
