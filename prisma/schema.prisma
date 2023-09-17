@@ -25,15 +25,23 @@ model User {
   activate     Boolean @default(false)
   codeActivate Int?
   Board        Board[]
+  RefreshTokenUser RefreshTokenUser[]
+}
+
+model RefreshTokenUser {
+  id Int @id @default(autoincrement())
+  user User @relation(fields: [idUser], references: [id])
+  idUser Int
+  refreshToken String
 }
 
 model Board {
-  id       Int    @id @default(autoincrement())
+  id      Int    @id @default(autoincrement())
   InBoard Int?
-  name     String
-  user     User   @relation(fields: [idUser], references: [id])
-  idUser   Int
-  Tuto     Tuto[]
+  name    String
+  user    User   @relation(fields: [idUser], references: [id])
+  idUser  Int
+  Tuto    Tuto[]
 }
 
 model Tuto {
