@@ -22,7 +22,6 @@ model User {
   lastName     String
   firstName    String
   password     String
-  refreshToken String?
   activate     Boolean @default(false)
   codeActivate Int?
   Board        Board[]
