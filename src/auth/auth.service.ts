@@ -3,7 +3,6 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -12,7 +11,6 @@ import { TokenPayloadInterface } from 'src/interfaces/TokenPayload.interface';
 import { JwtService } from '@nestjs/jwt';
 import { TokenDTO } from './dto/token.dto';
 import { ConnectUserDTO } from './dto/connect-user.dto';
-import { createHash } from 'crypto';
 import { MailService } from 'src/mail/mail.service';
 import { ActivationCodeDTO } from './dto/activation-code.dto';
 import { IdUserDTO } from './dto/id-user.dto';
@@ -142,24 +140,24 @@ export class AuthService {
     refreshToken: string,
     payload: TokenPayloadInterface,
   ): Promise<TokenPayloadInterface> {
-    const refreshTokenDB = await this.prisma.user.findUnique({
-      select: {
-        refreshToken: true,
-      },
-      where: {
-        id: payload.sub,
-      },
-    });
+    // const refreshTokenDB = await this.prisma.user.findUnique({
+    //   select: {
+    //     refreshToken: true,
+    //   },
+    //   where: {
+    //     id: payload.sub,
+    //   },
+    // });
 
-    if (!refreshTokenDB) throw new UnauthorizedException();
+    // if (!refreshTokenDB) throw new UnauthorizedException();
 
-    const hash = createHash('sha256').update(refreshToken).digest('hex');
+    // const hash = createHash('sha256').update(refreshToken).digest('hex');
 
-    const isMatch = await bcrypt.compare(hash, refreshTokenDB.refreshToken);
+    // const isMatch = await bcrypt.compare(hash, refreshTokenDB.refreshToken);
 
-    if (!isMatch) {
-      throw new ForbiddenException();
-    }
+    // if (!isMatch) {
+    //   throw new ForbiddenException();
+    // }
 
     return payload;
   }
@@ -183,7 +181,8 @@ export class AuthService {
 
     const access_token = await this.jwtService.signAsync(newPayloard, {
       secret: process.env.JWT,
-      expiresIn: '30m',
+      // expiresIn: '30m',
+      expiresIn: '7d',
     });
 
     const refresh_token = await this.jwtService.signAsync(newPayloard, {
@@ -191,16 +190,16 @@ export class AuthService {
       expiresIn: '7d',
     });
 
-    const hash = createHash('sha256').update(refresh_token).digest('hex');
+    // const hash = createHash('sha256').update(refresh_token).digest('hex');
 
-    const refreshTokenHashed = await bcrypt.hash(
-      hash,
-      parseInt(process.env.SALT),
-    );
+    // const refreshTokenHashed = await bcrypt.hash(
+    //   hash,
+    //   parseInt(process.env.SALT),
+    // );
 
     await this.prisma.user.update({
       data: {
-        refreshToken: refreshTokenHashed,
+        // refreshToken: refreshTokenHashed,
         codeActivate: null,
       },
       where: {
