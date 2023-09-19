@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -19,6 +20,7 @@ import { TokenPayloadInterface } from 'src/interfaces/TokenPayload.interface';
 import { CreateTutoDTO } from './dto/create-tuto.dto';
 import { JwtGuard } from 'src/jwt/guards/jwt.guard';
 import { TutoDTO } from './dto/tuto.dto';
+import { DeleteTutoDTO } from './dto/delete-tuto.dto';
 
 @UseGuards(JwtGuard)
 @ApiTags('tuto')
@@ -51,5 +53,13 @@ export class TutoController {
     @Body() createTuto: CreateTutoDTO,
   ): Promise<void> {
     return await this.tutoService.setTutos(req.user.sub, createTuto);
+  }
+
+  @Delete()
+  async deleteTuto(
+    @Req() req: { user: TokenPayloadInterface },
+    @Body() board: DeleteTutoDTO,
+  ): Promise<void> {
+    return await this.tutoService.deleteTuto(req.user.sub, board.id);
   }
 }
