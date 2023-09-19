@@ -1,5 +1,6 @@
 FROM node:18-alpine as dev
 RUN npm i -g @nestjs/cli@10.1.17
+RUN npm i -g npm-check-updates@latest
 USER node
 WORKDIR /develop
 EXPOSE 3000

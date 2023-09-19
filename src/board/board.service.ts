@@ -72,4 +72,17 @@ export class BoardService {
       },
     });
   }
+
+  async deleteBoard(idUser: number, idBoard: number): Promise<void> {
+    try {
+      await this.prisma.board.delete({
+        where: {
+          id: idBoard,
+          idUser: idUser,
+        },
+      });
+    } catch (error) {
+      throw new BadRequestException(error.meta.cause);
+    }
+  }
 }
