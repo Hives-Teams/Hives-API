@@ -49,6 +49,27 @@ export class TutoService {
     });
   }
 
+  async deleteTuto(idUser: number, idTuto: number): Promise<void> {
+    const idBoard = await this.prisma.tuto.findFirst({
+      select: {
+        idBoard: true,
+      },
+      where: {
+        id: idTuto,
+      },
+    });
+
+    if (!idBoard) throw new BadRequestException("Le tuto n'existe pas");
+
+    await this.boardBelongToUser(idUser, idBoard.idBoard);
+
+    await this.prisma.tuto.delete({
+      where: {
+        id: idTuto,
+      },
+    });
+  }
+
   private async listSocial(): Promise<void> {
     this.social = await this.prisma.socialNetwork.findMany();
   }
