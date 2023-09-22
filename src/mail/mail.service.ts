@@ -15,4 +15,15 @@ export class MailService {
       },
     });
   }
+
+  async sendForgotPasswordMail(email: string, code: number): Promise<void> {
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Mot de passe oublié',
+      template: 'mail-confirmation.hbs',
+      context: {
+        code: code,
+      },
+    });
+  }
 }

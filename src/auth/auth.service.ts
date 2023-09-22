@@ -120,6 +120,46 @@ export class AuthService {
     return await this.generateToken(payload);
   }
 
+  async sendForgotPasswordEmail(email: string): Promise<void> {
+    try {
+      const code = this.activationCode();
+
+      const idUser = await this.prisma.user.findFirstOrThrow({
+        where: {
+          email: email,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      await this.prisma.forgotPassword.upsert({
+        where: {
+          idUser: idUser.id,
+        },
+        update: {
+          codeForgot: code,
+        },
+        create: {
+          user: {
+            connect: {
+              email: email,
+            },
+          },
+          codeForgot: code,
+        },
+        include: {
+          user: true,
+        },
+      });
+      this.mailService.sendForgotPasswordMail(email, this.activationCode());
+    } catch (error) {
+      throw new BadRequestException(
+        "Cette adresse email n'est relié à aucun compte",
+      );
+    }
+  }
+
   private async userExist(email: string): Promise<boolean> {
     const user = await this.prisma.user.findUnique({
       where: {
