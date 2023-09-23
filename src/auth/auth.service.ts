@@ -1,3 +1,4 @@
+import { ChangeForgotPasswordDTO } from './dto/change-forgot-password.dto';
 import {
   BadRequestException,
   ConflictException,
@@ -152,12 +153,44 @@ export class AuthService {
           user: true,
         },
       });
-      this.mailService.sendForgotPasswordMail(email, this.activationCode());
+      this.mailService.sendForgotPasswordMail(email, code);
     } catch (error) {
       throw new BadRequestException(
         "Cette adresse email n'est relié à aucun compte",
       );
     }
+  }
+
+  async changeForgotPassword(user: ChangeForgotPasswordDTO): Promise<void> {
+    const code = await this.prisma.forgotPassword.findFirst({
+      where: {
+        user: {
+          email: user.email,
+        },
+      },
+    });
+
+    if (!code || code.codeForgot != user.code)
+      throw new BadRequestException('Code incorrect');
+
+    const salt = await bcrypt.genSalt(10);
+
+    const newPassword = await bcrypt.hash(user.newPassword, salt);
+
+    await this.prisma.user.update({
+      data: {
+        password: newPassword,
+      },
+      where: {
+        email: user.email,
+      },
+    });
+
+    await this.prisma.forgotPassword.delete({
+      where: {
+        idUser: code.idUser,
+      },
+    });
   }
 
   private async userExist(email: string): Promise<boolean> {
