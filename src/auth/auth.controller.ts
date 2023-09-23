@@ -23,6 +23,8 @@ import { ConnectUserDTO } from './dto/connect-user.dto';
 import { TokenDTO } from './dto/token.dto';
 import { ActivationCodeDTO } from './dto/activation-code.dto';
 import { IdUserDTO } from './dto/id-user.dto';
+import { EmailDTO } from './dto/email.dto';
+import { ChangeForgotPasswordDTO } from './dto/change-forgot-password.dto';
 
 @ApiTags('auth')
 @ApiBearerAuth()
@@ -53,6 +55,18 @@ export class AuthController {
   @Post('login')
   async login(@Body() user: ConnectUserDTO): Promise<TokenDTO> {
     return await this.authService.login(user);
+  }
+
+  @Post('forgotPassword')
+  async sendForgotPasswordEmail(@Body() user: EmailDTO): Promise<void> {
+    return await this.authService.sendForgotPasswordEmail(user.email);
+  }
+
+  @Post('resetForgotPassword')
+  async resetForgotPassword(
+    @Body() user: ChangeForgotPasswordDTO,
+  ): Promise<void> {
+    return await this.authService.changeForgotPassword(user);
   }
 
   @ApiOkResponse({

@@ -26,6 +26,14 @@ model User {
   codeActivate Int?
   Board        Board[]
   RefreshTokenUser RefreshTokenUser[]
+  ForgotPassword ForgotPassword[]
+}
+
+model ForgotPassword {
+  id Int @id @default(autoincrement())
+  user User @relation(fields: [idUser], references: [id])
+  idUser Int @unique
+  codeForgot Int
 }
 
 model RefreshTokenUser {
