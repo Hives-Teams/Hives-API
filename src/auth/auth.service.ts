@@ -24,7 +24,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
-  ) {}
+  ) { }
 
   async register(user: CreateUserDTO): Promise<IdUserDTO> {
     const userExist = await this.userExist(user.email);
@@ -303,6 +303,22 @@ export class AuthService {
             },
           });
         }
+      }
+    });
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async deleteForgotPassword(): Promise<void> {
+    const forgotPassword = await this.prisma.forgotPassword.findMany();
+
+    forgotPassword.forEach(async (f) => {
+      const diff = dayjs(Date.now()).diff(f.createdAt, 'minute');
+      if (diff >= 30) {
+        await this.prisma.forgotPassword.delete({
+          where: {
+            id: f.id,
+          },
+        });
       }
     });
   }
