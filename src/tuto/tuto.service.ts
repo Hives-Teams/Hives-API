@@ -20,6 +20,17 @@ export class TutoService {
     await this.boardBelongToUser(id, idBoard);
 
     const tuto: TutoDTO[] = await this.prisma.tuto.findMany({
+      select: {
+        id: true,
+        title: true,
+        URL: true,
+        idBoard: true,
+        SocialNetworks: {
+          select: {
+            name: true,
+          },
+        },
+      },
       where: {
         idBoard: idBoard,
       },
