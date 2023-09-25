@@ -24,7 +24,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
-  ) { }
+  ) {}
 
   async register(user: CreateUserDTO): Promise<IdUserDTO> {
     const userExist = await this.userExist(user.email);
