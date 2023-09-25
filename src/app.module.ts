@@ -9,6 +9,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { BoardModule } from './board/board.module';
 import { TutoModule } from './tuto/tuto.module';
 import { MailModule } from './mail/mail.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   controllers: [AppController],
@@ -27,6 +28,7 @@ import { MailModule } from './mail/mail.module';
         limit: 10,
       },
     ]),
+    ScheduleModule.forRoot(),
     AuthModule,
     PrismaModule,
     BoardModule,

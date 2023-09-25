@@ -27,6 +27,7 @@ model User {
   Board        Board[]
   RefreshTokenUser RefreshTokenUser[]
   ForgotPassword ForgotPassword[]
+  createdAt DateTime @default(now())
 }
 
 model ForgotPassword {
@@ -34,6 +35,7 @@ model ForgotPassword {
   user User @relation(fields: [idUser], references: [id])
   idUser Int @unique
   codeForgot Int
+  createdAt DateTime @default(now())
 }
 
 model RefreshTokenUser {
@@ -50,6 +52,7 @@ model Board {
   user    User   @relation(fields: [idUser], references: [id])
   idUser  Int
   Tuto    Tuto[]
+  createdAt DateTime @default(now())
 }
 
 model Tuto {
@@ -60,4 +63,5 @@ model Tuto {
   URL            String
   board          Board         @relation(fields: [idBoard], references: [id])
   idBoard        Int
+  createdAt DateTime @default(now())
 }

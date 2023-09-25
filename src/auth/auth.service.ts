@@ -15,6 +15,8 @@ import { ConnectUserDTO } from './dto/connect-user.dto';
 import { MailService } from 'src/mail/mail.service';
 import { ActivationCodeDTO } from './dto/activation-code.dto';
 import { IdUserDTO } from './dto/id-user.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class AuthService {
@@ -284,5 +286,40 @@ export class AuthService {
       access_token: access_token,
       refresh_token: refresh_token,
     };
+  }
+
+  @Cron(CronExpression.EVERY_30_MINUTES)
+  async deleteInactiveAccount(): Promise<void> {
+    const user = await this.prisma.user.findMany();
+
+    user.forEach(async (u) => {
+      if (!u.activate) {
+        const diff = dayjs(Date.now()).diff(u.createdAt, 'day');
+        if (diff >= 1) {
+          console.log('suppression de ' + u.email);
+          await this.prisma.user.delete({
+            where: {
+              id: u.id,
+            },
+          });
+        }
+      }
+    });
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async deleteForgotPassword(): Promise<void> {
+    const forgotPassword = await this.prisma.forgotPassword.findMany();
+
+    forgotPassword.forEach(async (f) => {
+      const diff = dayjs(Date.now()).diff(f.createdAt, 'minute');
+      if (diff >= 30) {
+        await this.prisma.forgotPassword.delete({
+          where: {
+            id: f.id,
+          },
+        });
+      }
+    });
   }
 }
