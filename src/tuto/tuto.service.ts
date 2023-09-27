@@ -45,33 +45,39 @@ export class TutoService {
   ): Promise<TutoDTO[]> {
     await this.boardBelongToUser(idUser, idBoard);
 
-    const tuto: TutoDTO[] = await this.prisma.tuto.findMany({
-      select: {
-        id: true,
-        title: true,
-        URL: true,
-        idBoard: true,
-        SocialNetworks: {
-          select: {
-            name: true,
-          },
-        },
-      },
-      where: {
-        AND: [
-          {
-            idBoard: idBoard,
-          },
-          {
-            SocialNetworks: {
-              name: social,
+    try {
+      const socialArray: string[] = JSON.parse(social);
+
+      const tuto: TutoDTO[] = await this.prisma.tuto.findMany({
+        select: {
+          id: true,
+          title: true,
+          URL: true,
+          idBoard: true,
+          SocialNetworks: {
+            select: {
+              name: true,
             },
           },
-        ],
-      },
-    });
+        },
+        where: {
+          AND: [
+            {
+              idBoard: idBoard,
+            },
+            {
+              SocialNetworks: {
+                name: { in: socialArray },
+              },
+            },
+          ],
+        },
+      });
 
-    return tuto;
+      return tuto;
+    } catch (error) {
+      throw new BadRequestException('Format du tableau incorrect');
+    }
   }
 
   async setTutos(id: number, createTuto: CreateTutoDTO): Promise<void> {
