@@ -46,6 +46,29 @@ export class TutoController {
     return await this.tutoService.getTuto(req.user.sub, parseInt(idBoard));
   }
 
+  @ApiParam({
+    name: 'idBoard',
+    required: true,
+    type: Number,
+  })
+  @ApiParam({
+    name: 'social',
+    required: true,
+    type: String,
+  })
+  @Get(':idBoard/:social')
+  async getTutoBySocial(
+    @Req() req: { user: TokenPayloadInterface },
+    @Param('idBoard') idBoard: string,
+    @Param('idSocial') social: string,
+  ): Promise<TutoDTO[]> {
+    return await this.tutoService.getTutoBySocial(
+      req.user.sub,
+      parseInt(idBoard),
+      social,
+    );
+  }
+
   @ApiCreatedResponse()
   @Post()
   async setTuto(
