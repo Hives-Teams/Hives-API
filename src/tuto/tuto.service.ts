@@ -38,6 +38,48 @@ export class TutoService {
     return tuto;
   }
 
+  async getTutoBySocial(
+    idUser: number,
+    idBoard: number,
+    social: string,
+  ): Promise<TutoDTO[]> {
+    await this.boardBelongToUser(idUser, idBoard);
+
+    try {
+      const socialArray: string[] = JSON.parse(social);
+
+      const tuto: TutoDTO[] = await this.prisma.tuto.findMany({
+        select: {
+          id: true,
+          title: true,
+          URL: true,
+          idBoard: true,
+          SocialNetworks: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        where: {
+          AND: [
+            {
+              idBoard: idBoard,
+            },
+            {
+              SocialNetworks: {
+                name: { in: socialArray },
+              },
+            },
+          ],
+        },
+      });
+
+      return tuto;
+    } catch (error) {
+      throw new BadRequestException('Format du tableau incorrect');
+    }
+  }
+
   async setTutos(id: number, createTuto: CreateTutoDTO): Promise<void> {
     if (!this.isValidUrl(createTuto.url))
       throw new BadRequestException('Pas une URL');
