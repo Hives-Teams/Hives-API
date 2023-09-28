@@ -11,7 +11,6 @@ import {
 import { TutoService } from './tuto.service';
 import {
   ApiBearerAuth,
-  ApiCreatedResponse,
   ApiOkResponse,
   ApiParam,
   ApiTags,
@@ -28,6 +27,26 @@ import { DeleteTutoDTO } from './dto/delete-tuto.dto';
 @Controller('tuto')
 export class TutoController {
   constructor(private readonly tutoService: TutoService) {}
+
+  @ApiOkResponse({
+    type: String,
+    isArray: true,
+  })
+  @ApiParam({
+    name: 'idBoard',
+    type: String,
+    required: true,
+  })
+  @Get('social/:idBoard')
+  async getSocialByIdBoard(
+    @Req() req: { user: TokenPayloadInterface },
+    @Param('idBoard') idBoard: string,
+  ): Promise<string[]> {
+    return await this.tutoService.getSocialByIdBoard(
+      req.user.sub,
+      parseInt(idBoard),
+    );
+  }
 
   @ApiOkResponse({
     type: TutoDTO,
@@ -74,7 +93,6 @@ export class TutoController {
     );
   }
 
-  @ApiCreatedResponse()
   @Post()
   async setTuto(
     @Req() req: { user: TokenPayloadInterface },

@@ -80,6 +80,31 @@ export class TutoService {
     }
   }
 
+  async getSocialByIdBoard(idUser: number, idBoard: number): Promise<string[]> {
+    await this.boardBelongToUser(idUser, idBoard);
+
+    const socialPrisma = await this.prisma.socialNetwork.findMany({
+      select: {
+        name: true,
+      },
+      where: {
+        Tuto: {
+          some: {
+            idBoard: idBoard,
+          },
+        },
+      },
+    });
+
+    const social: string[] = [];
+
+    socialPrisma.forEach((s) => {
+      social.push(s.name);
+    });
+
+    return social;
+  }
+
   async setTutos(id: number, createTuto: CreateTutoDTO): Promise<void> {
     if (!this.isValidUrl(createTuto.url))
       throw new BadRequestException('Pas une URL');
