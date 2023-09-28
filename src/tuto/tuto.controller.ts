@@ -34,7 +34,7 @@ export class TutoController {
   })
   @ApiParam({
     name: 'idBoard',
-    type: String,
+    type: Number,
     required: true,
   })
   @Get('social/:idBoard')
