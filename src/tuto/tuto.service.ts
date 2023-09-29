@@ -8,11 +8,15 @@ import { CreateTutoDTO } from './dto/create-tuto.dto';
 import { SocialInterface } from 'src/interfaces/Social.interface';
 import detectSocialNetwork from 'detect-social-network';
 import { TutoDTO } from './dto/tuto.dto';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class TutoService {
   social: SocialInterface[];
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly httpService: HttpService,
+  ) {
     this.listSocial();
   }
 
@@ -114,6 +118,12 @@ export class TutoService {
 
     if (!socialCompatibility)
       throw new BadRequestException('Réseau social non compatible');
+
+    if (socialCompatibility.name == 'tiktok') {
+      const longUrl = await this.httpService.axiosRef.get(createTuto.url);
+      createTuto.url =
+        longUrl.request._redirectable._options.href.split('?')[0];
+    }
 
     await this.boardBelongToUser(id, createTuto.board);
 
