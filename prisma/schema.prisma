@@ -17,41 +17,43 @@ model SocialNetwork {
 }
 
 model User {
-  id           Int     @id @default(autoincrement())
-  email        String  @unique
-  lastName     String
-  firstName    String
-  password     String
-  activate     Boolean @default(false)
-  codeActivate Int?
-  Board        Board[]
+  id               Int                @id @default(autoincrement())
+  email            String             @unique
+  lastName         String
+  firstName        String
+  password         String
+  activate         Boolean            @default(false)
+  codeActivate     Int?
+  Board            Board[]
   RefreshTokenUser RefreshTokenUser[]
-  ForgotPassword ForgotPassword[]
-  createdAt DateTime @default(now())
+  ForgotPassword   ForgotPassword[]
+  createdAt        DateTime           @default(now())
 }
 
 model ForgotPassword {
-  id Int @id @default(autoincrement())
-  user User @relation(fields: [idUser], references: [id])
-  idUser Int @unique
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [idUser], references: [id])
+  idUser     Int      @unique
   codeForgot Int
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now())
 }
 
 model RefreshTokenUser {
-  id Int @id @default(autoincrement())
-  user User @relation(fields: [idUser], references: [id])
-  idUser Int
+  id           Int      @id @default(autoincrement())
+  user         User     @relation(fields: [idUser], references: [id])
+  idUser       Int
+  idDevice     String   @unique
   refreshToken String
+  updatedAt    DateTime @default(now()) @updatedAt
 }
 
 model Board {
-  id      Int    @id @default(autoincrement())
-  InBoard Int?
-  name    String
-  user    User   @relation(fields: [idUser], references: [id])
-  idUser  Int
-  Tuto    Tuto[]
+  id        Int      @id @default(autoincrement())
+  InBoard   Int?
+  name      String
+  user      User     @relation(fields: [idUser], references: [id])
+  idUser    Int
+  Tuto      Tuto[]
   createdAt DateTime @default(now())
 }
 
@@ -63,5 +65,5 @@ model Tuto {
   URL            String
   board          Board         @relation(fields: [idBoard], references: [id])
   idBoard        Int
-  createdAt DateTime @default(now())
+  createdAt      DateTime      @default(now())
 }

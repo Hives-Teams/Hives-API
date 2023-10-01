@@ -4,6 +4,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -17,6 +18,7 @@ import { ActivationCodeDTO } from './dto/activation-code.dto';
 import { IdUserDTO } from './dto/id-user.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import dayjs from 'dayjs';
+import { createHash } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -31,9 +33,8 @@ export class AuthService {
     if (userExist) {
       throw new ConflictException('Cet email est déjà associé à un compte');
     }
-    const salt = await bcrypt.genSalt(10);
 
-    const hashpwd = await bcrypt.hash(user.password, salt);
+    const hashpwd = await this.hash(user.password);
 
     const activationCode = this.activationCode();
 
@@ -82,22 +83,47 @@ export class AuthService {
 
     if (!user) throw new ForbiddenException('Code incorrect');
 
-    await this.prisma.user.update({
-      where: {
-        id: code.id,
-      },
-      data: {
-        codeActivate: null,
-        activate: true,
-      },
-    });
-
     const payload: TokenPayloadInterface = {
       sub: user.id,
       email: user.email,
     };
 
-    return await this.generateToken(payload);
+    const jwt = await this.generateToken(payload);
+
+    let refreshToken = createHash('sha256')
+      .update(jwt.refresh_token)
+      .digest('hex');
+
+    refreshToken = await this.hash(refreshToken);
+
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: {
+          id: code.id,
+        },
+        data: {
+          activate: true,
+          codeActivate: null,
+        },
+      }),
+
+      this.prisma.refreshTokenUser.upsert({
+        where: {
+          idDevice: code.idDevice,
+        },
+        create: {
+          idDevice: code.idDevice,
+          refreshToken: refreshToken,
+          idUser: code.id,
+        },
+        update: {
+          refreshToken: refreshToken,
+          idUser: code.id,
+        },
+      }),
+    ]);
+
+    return jwt;
   }
 
   async login(user: ConnectUserDTO): Promise<TokenDTO> {
@@ -120,7 +146,30 @@ export class AuthService {
       email: userResult.email,
     };
 
-    return await this.generateToken(payload);
+    const jwt = await this.generateToken(payload);
+
+    let refreshToken = createHash('sha256')
+      .update(jwt.refresh_token)
+      .digest('hex');
+
+    refreshToken = await this.hash(refreshToken);
+
+    await this.prisma.refreshTokenUser.upsert({
+      where: {
+        idDevice: user.idDevice,
+      },
+      create: {
+        idDevice: user.idDevice,
+        refreshToken: refreshToken,
+        idUser: userResult.id,
+      },
+      update: {
+        refreshToken: refreshToken,
+        idUser: userResult.id,
+      },
+    });
+
+    return jwt;
   }
 
   async sendForgotPasswordEmail(email: string): Promise<void> {
@@ -175,9 +224,7 @@ export class AuthService {
     if (!code || code.codeForgot != user.code)
       throw new BadRequestException('Code incorrect');
 
-    const salt = await bcrypt.genSalt(10);
-
-    const newPassword = await bcrypt.hash(user.newPassword, salt);
+    const newPassword = await this.hash(user.newPassword);
 
     await this.prisma.user.update({
       data: {
@@ -211,30 +258,57 @@ export class AuthService {
     return Math.floor(Math.random() * (10000 - 1000) + 1000);
   }
 
-  async getUserIfRefreshTokenMatches(
-    refreshToken: string,
+  async refreshToken(
     payload: TokenPayloadInterface,
-  ): Promise<TokenPayloadInterface> {
-    // const refreshTokenDB = await this.prisma.user.findUnique({
-    //   select: {
-    //     refreshToken: true,
-    //   },
-    //   where: {
-    //     id: payload.sub,
-    //   },
-    // });
+    idDevice: string,
+  ): Promise<TokenDTO> {
+    const refreshTokenDB = await this.prisma.refreshTokenUser.findFirst({
+      where: {
+        idDevice: idDevice,
+        idUser: payload.sub,
+      },
+    });
 
-    // if (!refreshTokenDB) throw new UnauthorizedException();
+    if (!refreshTokenDB) throw new UnauthorizedException('pas token');
 
-    // const hash = createHash('sha256').update(refreshToken).digest('hex');
+    const refreshTokenCrypt = createHash('sha256')
+      .update(payload.refreshToken)
+      .digest('hex');
 
-    // const isMatch = await bcrypt.compare(hash, refreshTokenDB.refreshToken);
+    const isMatch = await bcrypt.compare(
+      refreshTokenCrypt,
+      refreshTokenDB.refreshToken,
+    );
 
-    // if (!isMatch) {
-    //   throw new ForbiddenException();
-    // }
+    if (!isMatch) throw new ForbiddenException('not match');
 
-    return payload;
+    payload.refreshToken = null;
+
+    const jwt = await this.generateToken(payload);
+
+    let refreshToken = createHash('sha256')
+      .update(jwt.refresh_token)
+      .digest('hex');
+
+    refreshToken = await this.hash(refreshToken);
+
+    await this.prisma.refreshTokenUser.updateMany({
+      data: {
+        refreshToken: refreshToken,
+      },
+      where: {
+        AND: [
+          {
+            idUser: payload.sub,
+          },
+          {
+            idDevice: idDevice,
+          },
+        ],
+      },
+    });
+
+    return jwt;
   }
 
   async userIsActivated(id: number): Promise<void> {
@@ -256,30 +330,12 @@ export class AuthService {
 
     const access_token = await this.jwtService.signAsync(newPayloard, {
       secret: process.env.JWT,
-      // expiresIn: '30m',
-      expiresIn: '7d',
+      expiresIn: '15m',
     });
 
     const refresh_token = await this.jwtService.signAsync(newPayloard, {
       secret: process.env.REFRESH,
-      expiresIn: '7d',
-    });
-
-    // const hash = createHash('sha256').update(refresh_token).digest('hex');
-
-    // const refreshTokenHashed = await bcrypt.hash(
-    //   hash,
-    //   parseInt(process.env.SALT),
-    // );
-
-    await this.prisma.user.update({
-      data: {
-        // refreshToken: refreshTokenHashed,
-        codeActivate: null,
-      },
-      where: {
-        id: payload.sub,
-      },
+      expiresIn: '30d',
     });
 
     return {
@@ -288,10 +344,24 @@ export class AuthService {
     };
   }
 
+  private async hash(key: string): Promise<string> {
+    const salt = await bcrypt.genSalt(10);
+
+    return await bcrypt.hash(key, salt);
+  }
+
   @Cron(CronExpression.EVERY_30_MINUTES)
   async deleteInactiveAccount(): Promise<void> {
-    const user = await this.prisma.user.findMany();
+    const user = await this.prisma.user.findMany({
+      select: {
+        id: true,
+        createdAt: true,
+        email: true,
+        activate: true,
+      },
+    });
 
+    // suppression compte non active
     user.forEach(async (u) => {
       if (!u.activate) {
         const diff = dayjs(Date.now()).diff(u.createdAt, 'day');
@@ -303,6 +373,21 @@ export class AuthService {
             },
           });
         }
+      }
+    });
+
+    const refreshToken = await this.prisma.refreshTokenUser.findMany();
+
+    // suppression device non utilisée depuis 30 jours
+    refreshToken.forEach(async (r) => {
+      const diff = dayjs(Date.now()).diff(r.updatedAt, 'day');
+      if (diff > 30) {
+        console.log('suppression du device ' + r.idDevice);
+        await this.prisma.refreshTokenUser.delete({
+          where: {
+            idDevice: r.idDevice,
+          },
+        });
       }
     });
   }

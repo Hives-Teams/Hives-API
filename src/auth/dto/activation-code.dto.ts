@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsUUID } from 'class-validator';
 
 export class ActivationCodeDTO {
   @ApiProperty()
@@ -11,4 +11,9 @@ export class ActivationCodeDTO {
   @IsNotEmpty()
   @IsNumber()
   code: number;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsUUID()
+  idDevice: string;
 }
