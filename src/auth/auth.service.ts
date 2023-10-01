@@ -352,8 +352,16 @@ export class AuthService {
 
   @Cron(CronExpression.EVERY_30_MINUTES)
   async deleteInactiveAccount(): Promise<void> {
-    const user = await this.prisma.user.findMany();
+    const user = await this.prisma.user.findMany({
+      select: {
+        id: true,
+        createdAt: true,
+        email: true,
+        activate: true,
+      },
+    });
 
+    // suppression compte non active
     user.forEach(async (u) => {
       if (!u.activate) {
         const diff = dayjs(Date.now()).diff(u.createdAt, 'day');
@@ -365,6 +373,21 @@ export class AuthService {
             },
           });
         }
+      }
+    });
+
+    const refreshToken = await this.prisma.refreshTokenUser.findMany();
+
+    // suppression device non utilisée depuis 30 jours
+    refreshToken.forEach(async (r) => {
+      const diff = dayjs(Date.now()).diff(r.updatedAt, 'day');
+      if (diff > 30) {
+        console.log('suppression du device ' + r.idDevice);
+        await this.prisma.refreshTokenUser.delete({
+          where: {
+            idDevice: r.idDevice,
+          },
+        });
       }
     });
   }
