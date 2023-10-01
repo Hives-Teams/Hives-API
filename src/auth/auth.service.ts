@@ -96,21 +96,32 @@ export class AuthService {
 
     refreshToken = await this.hash(refreshToken);
 
-    await this.prisma.user.update({
-      where: {
-        id: code.id,
-      },
-      data: {
-        activate: true,
-        codeActivate: null,
-        RefreshTokenUser: {
-          create: {
-            refreshToken: refreshToken,
-            idDevice: code.idDevice,
-          },
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: {
+          id: code.id,
         },
-      },
-    });
+        data: {
+          activate: true,
+          codeActivate: null,
+        },
+      }),
+
+      this.prisma.refreshTokenUser.upsert({
+        where: {
+          idDevice: code.idDevice,
+        },
+        create: {
+          idDevice: code.idDevice,
+          refreshToken: refreshToken,
+          idUser: code.id,
+        },
+        update: {
+          refreshToken: refreshToken,
+          idUser: code.id,
+        },
+      }),
+    ]);
 
     return jwt;
   }
@@ -135,7 +146,30 @@ export class AuthService {
       email: userResult.email,
     };
 
-    return await this.generateToken(payload);
+    const jwt = await this.generateToken(payload);
+
+    let refreshToken = createHash('sha256')
+      .update(jwt.refresh_token)
+      .digest('hex');
+
+    refreshToken = await this.hash(refreshToken);
+
+    await this.prisma.refreshTokenUser.upsert({
+      where: {
+        idDevice: user.idDevice,
+      },
+      create: {
+        idDevice: user.idDevice,
+        refreshToken: refreshToken,
+        idUser: userResult.id,
+      },
+      update: {
+        refreshToken: refreshToken,
+        idUser: userResult.id,
+      },
+    });
+
+    return jwt;
   }
 
   async sendForgotPasswordEmail(email: string): Promise<void> {
@@ -227,7 +261,7 @@ export class AuthService {
   async refreshToken(
     payload: TokenPayloadInterface,
     idDevice: string,
-  ): Promise<TokenPayloadInterface> {
+  ): Promise<TokenDTO> {
     const refreshTokenDB = await this.prisma.refreshTokenUser.findFirst({
       where: {
         idDevice: idDevice,
@@ -235,7 +269,7 @@ export class AuthService {
       },
     });
 
-    if (!refreshTokenDB) throw new UnauthorizedException();
+    if (!refreshTokenDB) throw new UnauthorizedException('pas token');
 
     const refreshTokenCrypt = createHash('sha256')
       .update(payload.refreshToken)
@@ -246,30 +280,35 @@ export class AuthService {
       refreshTokenDB.refreshToken,
     );
 
-    console.log(isMatch);
+    if (!isMatch) throw new ForbiddenException('not match');
 
-    if (!isMatch) throw new UnauthorizedException();
+    payload.refreshToken = null;
 
-    // const refreshTokenDB = await this.prisma.user.findUnique({
-    //   select: {
-    //     refreshToken: true,
-    //   },
-    //   where: {
-    //     id: payload.sub,
-    //   },
-    // });
+    const jwt = await this.generateToken(payload);
 
-    // if (!refreshTokenDB) throw new UnauthorizedException();
+    let refreshToken = createHash('sha256')
+      .update(jwt.refresh_token)
+      .digest('hex');
 
-    // const hash = createHash('sha256').update(refreshToken).digest('hex');
+    refreshToken = await this.hash(refreshToken);
 
-    // const isMatch = await bcrypt.compare(hash, refreshTokenDB.refreshToken);
+    await this.prisma.refreshTokenUser.updateMany({
+      data: {
+        refreshToken: refreshToken,
+      },
+      where: {
+        AND: [
+          {
+            idUser: payload.sub,
+          },
+          {
+            idDevice: idDevice,
+          },
+        ],
+      },
+    });
 
-    // if (!isMatch) {
-    //   throw new ForbiddenException();
-    // }
-
-    return payload;
+    return jwt;
   }
 
   async userIsActivated(id: number): Promise<void> {

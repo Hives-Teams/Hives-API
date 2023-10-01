@@ -93,9 +93,8 @@ export class AuthController {
   async refresh(
     @Req() req: { user: TokenPayloadInterface },
     @Body() device: DeviceDTO,
-  ): Promise<any> {
-    await this.authService.refreshToken(req.user, device.idDevice);
-    return device;
+  ): Promise<TokenDTO> {
+    return this.authService.refreshToken(req.user, device.idDevice);
   }
 
   @UseGuards(JwtGuard)
