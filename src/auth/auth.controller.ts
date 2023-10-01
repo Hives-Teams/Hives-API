@@ -12,6 +12,7 @@ import { AuthService } from './auth.service';
 import { CreateUserDTO } from './dto/create-user.dto';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiTags,
@@ -25,6 +26,8 @@ import { ActivationCodeDTO } from './dto/activation-code.dto';
 import { IdUserDTO } from './dto/id-user.dto';
 import { EmailDTO } from './dto/email.dto';
 import { ChangeForgotPasswordDTO } from './dto/change-forgot-password.dto';
+import { DeviceDTO } from './dto/device.dto';
+import { v4 as uuidv4 } from 'uuid';
 
 @ApiTags('auth')
 @ApiBearerAuth()
@@ -42,6 +45,18 @@ export class AuthController {
 
   @ApiCreatedResponse({
     type: TokenDTO,
+  })
+  @ApiBody({
+    type: ActivationCodeDTO,
+    examples: {
+      example1: {
+        value: {
+          id: 0,
+          code: 0,
+          idDevice: uuidv4(),
+        },
+      },
+    },
   })
   @Post('activation')
   async activation(@Body() code: ActivationCodeDTO): Promise<TokenDTO> {
@@ -77,8 +92,10 @@ export class AuthController {
   @Post('refresh')
   async refresh(
     @Req() req: { user: TokenPayloadInterface },
-  ): Promise<TokenDTO> {
-    return await this.authService.generateToken(req.user);
+    @Body() device: DeviceDTO,
+  ): Promise<any> {
+    await this.authService.refreshToken(req.user, device.idDevice);
+    return device;
   }
 
   @UseGuards(JwtGuard)

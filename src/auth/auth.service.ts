@@ -4,6 +4,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -17,6 +18,7 @@ import { ActivationCodeDTO } from './dto/activation-code.dto';
 import { IdUserDTO } from './dto/id-user.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import dayjs from 'dayjs';
+import { createHash } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -31,9 +33,8 @@ export class AuthService {
     if (userExist) {
       throw new ConflictException('Cet email est déjà associé à un compte');
     }
-    const salt = await bcrypt.genSalt(10);
 
-    const hashpwd = await bcrypt.hash(user.password, salt);
+    const hashpwd = await this.hash(user.password);
 
     const activationCode = this.activationCode();
 
@@ -82,22 +83,36 @@ export class AuthService {
 
     if (!user) throw new ForbiddenException('Code incorrect');
 
-    await this.prisma.user.update({
-      where: {
-        id: code.id,
-      },
-      data: {
-        codeActivate: null,
-        activate: true,
-      },
-    });
-
     const payload: TokenPayloadInterface = {
       sub: user.id,
       email: user.email,
     };
 
-    return await this.generateToken(payload);
+    const jwt = await this.generateToken(payload);
+
+    let refreshToken = createHash('sha256')
+      .update(jwt.refresh_token)
+      .digest('hex');
+
+    refreshToken = await this.hash(refreshToken);
+
+    await this.prisma.user.update({
+      where: {
+        id: code.id,
+      },
+      data: {
+        activate: true,
+        codeActivate: null,
+        RefreshTokenUser: {
+          create: {
+            refreshToken: refreshToken,
+            idDevice: code.idDevice,
+          },
+        },
+      },
+    });
+
+    return jwt;
   }
 
   async login(user: ConnectUserDTO): Promise<TokenDTO> {
@@ -175,9 +190,7 @@ export class AuthService {
     if (!code || code.codeForgot != user.code)
       throw new BadRequestException('Code incorrect');
 
-    const salt = await bcrypt.genSalt(10);
-
-    const newPassword = await bcrypt.hash(user.newPassword, salt);
+    const newPassword = await this.hash(user.newPassword);
 
     await this.prisma.user.update({
       data: {
@@ -211,10 +224,32 @@ export class AuthService {
     return Math.floor(Math.random() * (10000 - 1000) + 1000);
   }
 
-  async getUserIfRefreshTokenMatches(
-    refreshToken: string,
+  async refreshToken(
     payload: TokenPayloadInterface,
+    idDevice: string,
   ): Promise<TokenPayloadInterface> {
+    const refreshTokenDB = await this.prisma.refreshTokenUser.findFirst({
+      where: {
+        idDevice: idDevice,
+        idUser: payload.sub,
+      },
+    });
+
+    if (!refreshTokenDB) throw new UnauthorizedException();
+
+    const refreshTokenCrypt = createHash('sha256')
+      .update(payload.refreshToken)
+      .digest('hex');
+
+    const isMatch = await bcrypt.compare(
+      refreshTokenCrypt,
+      refreshTokenDB.refreshToken,
+    );
+
+    console.log(isMatch);
+
+    if (!isMatch) throw new UnauthorizedException();
+
     // const refreshTokenDB = await this.prisma.user.findUnique({
     //   select: {
     //     refreshToken: true,
@@ -256,36 +291,24 @@ export class AuthService {
 
     const access_token = await this.jwtService.signAsync(newPayloard, {
       secret: process.env.JWT,
-      // expiresIn: '30m',
-      expiresIn: '7d',
+      expiresIn: '15m',
     });
 
     const refresh_token = await this.jwtService.signAsync(newPayloard, {
       secret: process.env.REFRESH,
-      expiresIn: '7d',
-    });
-
-    // const hash = createHash('sha256').update(refresh_token).digest('hex');
-
-    // const refreshTokenHashed = await bcrypt.hash(
-    //   hash,
-    //   parseInt(process.env.SALT),
-    // );
-
-    await this.prisma.user.update({
-      data: {
-        // refreshToken: refreshTokenHashed,
-        codeActivate: null,
-      },
-      where: {
-        id: payload.sub,
-      },
+      expiresIn: '30d',
     });
 
     return {
       access_token: access_token,
       refresh_token: refresh_token,
     };
+  }
+
+  private async hash(key: string): Promise<string> {
+    const salt = await bcrypt.genSalt(10);
+
+    return await bcrypt.hash(key, salt);
   }
 
   @Cron(CronExpression.EVERY_30_MINUTES)

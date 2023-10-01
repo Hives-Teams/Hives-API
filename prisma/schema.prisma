@@ -42,7 +42,7 @@ model RefreshTokenUser {
   id           Int    @id @default(autoincrement())
   user         User   @relation(fields: [idUser], references: [id])
   idUser       Int
-  idDevice     String @unique
+  idDevice     String
   refreshToken String
 }
 
