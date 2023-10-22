@@ -111,11 +111,17 @@ export class AuthController {
     return await this.authService.login(user);
   }
 
+  @ApiOperation({
+    summary: 'Envoi un code pour réinitialiser son mot de passe',
+  })
   @Post('forgotPassword')
   async sendForgotPasswordEmail(@Body() user: EmailDTO): Promise<void> {
     return await this.authService.sendForgotPasswordEmail(user.email);
   }
 
+  @ApiOperation({
+    summary: "Réinitialise son mot de passe à l'aide du code reçu par mail",
+  })
   @Post('resetForgotPassword')
   async resetForgotPassword(
     @Body() user: ChangeForgotPasswordDTO,

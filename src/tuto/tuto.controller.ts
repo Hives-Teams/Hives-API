@@ -11,7 +11,9 @@ import {
 import { TutoService } from './tuto.service';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiOkResponse,
+  ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
@@ -28,6 +30,9 @@ import { DeleteTutoDTO } from './dto/delete-tuto.dto';
 export class TutoController {
   constructor(private readonly tutoService: TutoService) {}
 
+  @ApiOperation({
+    summary: 'Affiche les réseaux sociaux des tutos enregistrée dans un board',
+  })
   @ApiOkResponse({
     type: String,
     isArray: true,
@@ -48,6 +53,9 @@ export class TutoController {
     );
   }
 
+  @ApiOperation({
+    summary: "Récupères les tutos d'un Board via son id",
+  })
   @ApiOkResponse({
     type: TutoDTO,
     isArray: true,
@@ -65,6 +73,10 @@ export class TutoController {
     return await this.tutoService.getTuto(req.user.sub, parseInt(idBoard));
   }
 
+  @ApiOperation({
+    summary:
+      "Récupère les tutos d'un Board via son idB + filtre réseau sociaux",
+  })
   @ApiOkResponse({
     type: TutoDTO,
     isArray: true,
@@ -93,6 +105,13 @@ export class TutoController {
     );
   }
 
+  @ApiOperation({
+    summary: 'Enregistrer un tuto dans un Board',
+  })
+  @ApiBody({
+    type: CreateTutoDTO,
+    description: `Le champ "name" est optionnel (il faut que je supprimes ça dans une future maj)`,
+  })
   @Post()
   async setTuto(
     @Req() req: { user: TokenPayloadInterface },
@@ -101,6 +120,9 @@ export class TutoController {
     return await this.tutoService.setTutos(req.user.sub, createTuto);
   }
 
+  @ApiOperation({
+    summary: 'Supprimer un tuto via son id',
+  })
   @Delete()
   async deleteTuto(
     @Req() req: { user: TokenPayloadInterface },

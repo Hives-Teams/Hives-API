@@ -44,7 +44,7 @@ export class BoardController {
   }
 
   @ApiOperation({
-    summary: 'Permet de créer un nouveau board',
+    summary: 'Créer un nouveau board',
   })
   @ApiCreatedResponse()
   @Post()
@@ -56,7 +56,7 @@ export class BoardController {
   }
 
   @ApiOperation({
-    summary: 'Permet de créer un nouveau inBoard',
+    summary: 'Créer un nouveau inBoard',
   })
   @ApiCreatedResponse()
   @Post('inboard')
@@ -68,7 +68,7 @@ export class BoardController {
   }
 
   @ApiOperation({
-    summary: "Permet de supprimer un board à l'aide de son id",
+    summary: "Supprimer un board à l'aide de son id",
   })
   @ApiOkResponse()
   @Delete()
