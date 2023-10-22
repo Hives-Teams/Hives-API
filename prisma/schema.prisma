@@ -63,7 +63,7 @@ model Tuto {
   SocialNetworks SocialNetwork @relation(fields: [idSocial], references: [id])
   idSocial       Int
   URL            String
-  board          Board         @relation(fields: [idBoard], references: [id])
+  board          Board         @relation(fields: [idBoard], references: [id], onDelete: Cascade)
   idBoard        Int
   createdAt      DateTime      @default(now())
 }
