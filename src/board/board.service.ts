@@ -82,7 +82,7 @@ export class BoardService {
         },
       });
     } catch (error) {
-      throw new BadRequestException(error.meta.cause);
+      throw new BadRequestException();
     }
   }
 }
