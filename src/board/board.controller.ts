@@ -15,6 +15,7 @@ import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
 import { CreateBoardDTO } from './dto/create-board.dto';
@@ -28,6 +29,9 @@ import { DeleteBoardDTO } from './dto/delete-board.dto';
 export class BoardController {
   constructor(private readonly boardService: BoardService) {}
 
+  @ApiOperation({
+    summary: 'Affiche tous les boards du compte',
+  })
   @ApiOkResponse({
     type: BoardDTO,
     isArray: true,
@@ -39,6 +43,9 @@ export class BoardController {
     return await this.boardService.getBoard(req.user.sub);
   }
 
+  @ApiOperation({
+    summary: 'Créer un nouveau board',
+  })
   @ApiCreatedResponse()
   @Post()
   async setBoard(
@@ -48,6 +55,9 @@ export class BoardController {
     return await this.boardService.setBoard(req.user.sub, board.name);
   }
 
+  @ApiOperation({
+    summary: 'Créer un nouveau inBoard',
+  })
   @ApiCreatedResponse()
   @Post('inboard')
   async setInBoard(
@@ -57,6 +67,9 @@ export class BoardController {
     return await this.boardService.setInBoard(req.user.sub, board);
   }
 
+  @ApiOperation({
+    summary: "Supprimer un board à l'aide de son id",
+  })
   @ApiOkResponse()
   @Delete()
   async deleteBoard(

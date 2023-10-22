@@ -15,6 +15,7 @@ import {
   ApiBody,
   ApiCreatedResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtGuard } from 'src/jwt/guards/jwt.guard';
@@ -35,21 +36,44 @@ import { v4 as uuidv4 } from 'uuid';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @ApiOperation({
+    summary: "Création d'un nouveau compte",
+  })
   @ApiCreatedResponse({
     type: IdUserDTO,
+    description:
+      "Id du compte que l'application mobile récupère afin de vérifier si le code d'activation du compte appartient bien à l'utilisateur",
+  })
+  @ApiBody({
+    type: CreateUserDTO,
+    examples: {
+      inscription: {
+        value: {
+          email: 'JohnDoe@gmail.com',
+          firstname: 'William',
+          lastname: 'Afton',
+          password: 'Abcdefg&',
+        },
+      },
+    },
   })
   @Post('register')
   async register(@Body() user: CreateUserDTO): Promise<IdUserDTO> {
     return await this.authService.register(user);
   }
 
+  @ApiOperation({
+    summary: 'Activation du compte',
+  })
   @ApiCreatedResponse({
     type: TokenDTO,
   })
   @ApiBody({
     type: ActivationCodeDTO,
     examples: {
-      example1: {
+      activation: {
+        description:
+          "Demande l'id de l'utilisateur, le code reçu par mail, ainsi que l'id unique du téléphone (ici généré automatiquement pour les tests)",
         value: {
           id: 0,
           code: 0,
@@ -63,8 +87,23 @@ export class AuthController {
     return await this.authService.activation(code);
   }
 
+  @ApiOperation({
+    summary: 'Connexion à un compte',
+  })
   @ApiOkResponse({
     type: TokenDTO,
+  })
+  @ApiBody({
+    type: ConnectUserDTO,
+    examples: {
+      connexion: {
+        value: {
+          email: 'Bee@Miel.com',
+          password: 'Abcdefg&',
+          idDevice: uuidv4(),
+        },
+      },
+    },
   })
   @HttpCode(HttpStatus.OK)
   @Post('login')
@@ -72,11 +111,17 @@ export class AuthController {
     return await this.authService.login(user);
   }
 
+  @ApiOperation({
+    summary: 'Envoi un code pour réinitialiser son mot de passe',
+  })
   @Post('forgotPassword')
   async sendForgotPasswordEmail(@Body() user: EmailDTO): Promise<void> {
     return await this.authService.sendForgotPasswordEmail(user.email);
   }
 
+  @ApiOperation({
+    summary: "Réinitialise son mot de passe à l'aide du code reçu par mail",
+  })
   @Post('resetForgotPassword')
   async resetForgotPassword(
     @Body() user: ChangeForgotPasswordDTO,
@@ -84,11 +129,18 @@ export class AuthController {
     return await this.authService.changeForgotPassword(user);
   }
 
+  @ApiOperation({
+    summary:
+      "Actualise l'access_token à l'aide du refresh_token (via le bouton Authorize sur Swagger)",
+  })
   @ApiOkResponse({
     type: TokenDTO,
   })
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtRefreshGuard)
+  @ApiBody({
+    description: 'Vous devez donner un idDevice qui soit valide',
+  })
   @Post('refresh')
   async refresh(
     @Req() req: { user: TokenPayloadInterface },
