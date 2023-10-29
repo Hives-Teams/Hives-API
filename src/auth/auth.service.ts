@@ -19,6 +19,7 @@ import { IdUserDTO } from './dto/id-user.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import dayjs from 'dayjs';
 import { createHash } from 'crypto';
+import { NotificationDTO } from './dto/notification.dto';
 
 @Injectable()
 export class AuthService {
@@ -170,6 +171,31 @@ export class AuthService {
     });
 
     return jwt;
+  }
+
+  async setTokenNotification(
+    idUser: number,
+    notif: NotificationDTO,
+  ): Promise<void> {
+    try {
+      await this.prisma.refreshTokenUser.updateMany({
+        data: {
+          Notification: notif.token,
+        },
+        where: {
+          AND: [
+            {
+              idUser: idUser,
+            },
+            {
+              idDevice: notif.idDevice,
+            },
+          ],
+        },
+      });
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   async sendForgotPasswordEmail(email: string): Promise<void> {
@@ -351,7 +377,7 @@ export class AuthService {
   }
 
   @Cron(CronExpression.EVERY_30_MINUTES)
-  async deleteInactiveAccount(): Promise<void> {
+  private async deleteInactiveAccount(): Promise<void> {
     const user = await this.prisma.user.findMany({
       select: {
         id: true,
@@ -393,7 +419,7 @@ export class AuthService {
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
-  async deleteForgotPassword(): Promise<void> {
+  private async deleteForgotPassword(): Promise<void> {
     const forgotPassword = await this.prisma.forgotPassword.findMany();
 
     forgotPassword.forEach(async (f) => {
