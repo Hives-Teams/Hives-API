@@ -377,7 +377,7 @@ export class AuthService {
   }
 
   @Cron(CronExpression.EVERY_30_MINUTES)
-  private async deleteInactiveAccount(): Promise<void> {
+  async deleteInactiveAccount(): Promise<void> {
     const user = await this.prisma.user.findMany({
       select: {
         id: true,
@@ -419,7 +419,7 @@ export class AuthService {
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
-  private async deleteForgotPassword(): Promise<void> {
+  async deleteForgotPassword(): Promise<void> {
     const forgotPassword = await this.prisma.forgotPassword.findMany();
 
     forgotPassword.forEach(async (f) => {
