@@ -9,6 +9,14 @@ import { SocialInterface } from 'src/interfaces/Social.interface';
 import detectSocialNetwork from 'detect-social-network';
 import { TutoDTO } from './dto/tuto.dto';
 import { HttpService } from '@nestjs/axios';
+import {
+  Expo,
+  ExpoPushMessage,
+  ExpoPushSuccessTicket,
+  ExpoPushTicket,
+} from 'expo-server-sdk';
+import { PhoneNotification } from 'src/interfaces/phone-notification.interface';
+import { setTimeout } from 'timers/promises';
 
 @Injectable()
 export class TutoService {
@@ -186,5 +194,142 @@ export class TutoService {
     } catch (error) {
       return false;
     }
+  }
+
+  async reminderNotifications(): Promise<void> {
+    const tokens = await this.prisma.refreshTokenUser.findMany({
+      select: {
+        idUser: true,
+        Notification: true,
+      },
+      where: {
+        NOT: [
+          {
+            Notification: null,
+          },
+        ],
+      },
+    });
+
+    const messages: PhoneNotification[] = [];
+
+    for (const t of tokens) {
+      if (Expo.isExpoPushToken(`ExponentPushToken[${t.Notification}]`)) {
+        const board = await this.prisma.board.findFirst({
+          select: {
+            id: true,
+            name: true,
+          },
+          where: {
+            idUser: t.idUser,
+          },
+        });
+        if (board) {
+          messages.push({
+            to: `ExponentPushToken[${t.Notification}]`,
+            title: 'Hives',
+            body: `vous avez vu le tutos ${board.name} ?`,
+            data: { board: board.id },
+          });
+        }
+      } else {
+        await this.prisma.refreshTokenUser.update({
+          where: {
+            Notification: t.Notification,
+          },
+          data: {
+            Notification: null,
+          },
+        });
+      }
+    }
+
+    const userWithNotif = await this.prisma.refreshTokenUser.findMany({
+      select: {
+        idUser: true,
+        idDevice: true,
+      },
+      where: {
+        NOT: [
+          {
+            Notification: null,
+          },
+        ],
+      },
+    });
+
+    const expo = new Expo({ accessToken: process.env.EXPO_ACCESS_TOKEN });
+
+    const chunks = expo.chunkPushNotifications(messages);
+    const tickets = await this.sendNotifications(chunks, expo);
+
+    console.log(tickets);
+
+    // // 15 min
+    await setTimeout(900000);
+
+    const receiptIds: string[] = [];
+
+    for (const ticket of tickets as ExpoPushSuccessTicket[]) {
+      if (ticket.id) {
+        receiptIds.push(ticket.id);
+      }
+    }
+
+    const receiptIdChunks = expo.chunkPushNotificationReceiptIds(receiptIds);
+
+    await this.errorNotifications(receiptIdChunks, expo, userWithNotif);
+  }
+
+  private async sendNotifications(
+    chunks: ExpoPushMessage[][],
+    expo: Expo,
+  ): Promise<ExpoPushTicket[]> {
+    const tickets: ExpoPushTicket[] = [];
+
+    for (const chunk of chunks) {
+      try {
+        const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+        tickets.push(...ticketChunk);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    return tickets;
+  }
+
+  private async errorNotifications(
+    receiptIdChunks: string[][],
+    expo: Expo,
+    idArray: {
+      idUser: number;
+      idDevice: string;
+    }[],
+  ): Promise<void> {
+    receiptIdChunks.forEach(async (chunk, index) => {
+      try {
+        const receipts = await expo.getPushNotificationReceiptsAsync(chunk);
+        for (const receiptId in receipts) {
+          const { status, details } = receipts[receiptId];
+          if (status === 'error' && details && details.error) {
+            console.error(`The error code is ${details.error}`);
+            if (details.error == 'DeviceNotRegistered') {
+              await this.prisma.refreshTokenUser.update({
+                where: {
+                  idUser: idArray[index].idUser,
+                  idDevice: idArray[index].idDevice,
+                },
+                data: {
+                  Notification: null,
+                },
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    });
   }
 }
