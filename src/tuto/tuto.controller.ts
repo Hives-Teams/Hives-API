@@ -23,13 +23,22 @@ import { JwtGuard } from 'src/jwt/guards/jwt.guard';
 import { TutoDTO } from './dto/tuto.dto';
 import { DeleteTutoDTO } from './dto/delete-tuto.dto';
 
-@UseGuards(JwtGuard)
 @ApiTags('tuto')
 @ApiBearerAuth()
 @Controller('tuto')
 export class TutoController {
   constructor(private readonly tutoService: TutoService) {}
 
+  @ApiOperation({
+    summary:
+      'prend 15min à charger (du à la gestion des erreurs des notifications)',
+  })
+  @Get('Test_Notification')
+  async testNotification() {
+    return await this.tutoService.reminderNotifications();
+  }
+
+  @UseGuards(JwtGuard)
   @ApiOperation({
     summary: 'Affiche les réseaux sociaux des tutos enregistrée dans un board',
   })
@@ -53,6 +62,7 @@ export class TutoController {
     );
   }
 
+  @UseGuards(JwtGuard)
   @ApiOperation({
     summary: "Récupères les tutos d'un Board via son id",
   })
@@ -73,6 +83,7 @@ export class TutoController {
     return await this.tutoService.getTuto(req.user.sub, parseInt(idBoard));
   }
 
+  @UseGuards(JwtGuard)
   @ApiOperation({
     summary:
       "Récupère les tutos d'un Board via son idB + filtre réseau sociaux",
@@ -105,6 +116,7 @@ export class TutoController {
     );
   }
 
+  @UseGuards(JwtGuard)
   @ApiOperation({
     summary: 'Enregistrer un tuto dans un Board',
   })
@@ -120,6 +132,7 @@ export class TutoController {
     return await this.tutoService.setTutos(req.user.sub, createTuto);
   }
 
+  @UseGuards(JwtGuard)
   @ApiOperation({
     summary: 'Supprimer un tuto via son id',
   })

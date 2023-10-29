@@ -198,7 +198,7 @@ export class TutoService {
   }
 
   @Cron('0 10 * * *')
-  private async reminderNotifications(): Promise<void> {
+  async reminderNotifications(): Promise<void> {
     const tokens = await this.prisma.refreshTokenUser.findMany({
       select: {
         idUser: true,
@@ -231,7 +231,7 @@ export class TutoService {
             to: `ExponentPushToken[${t.Notification}]`,
             title: 'Hives',
             body: `vous avez vu le tutos ${board.name} ?`,
-            data: { board: board.id },
+            data: { id: board.id, nom: board.name },
           });
         }
       } else {
