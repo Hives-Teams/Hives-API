@@ -118,17 +118,17 @@ export class TutoController {
 
   @UseGuards(JwtGuard)
   @ApiOperation({
-    summary: 'Enregistrer un tuto dans un Board',
+    summary: 'Enregistre un ou plusieurs tuto dans un Board',
   })
   @ApiBody({
     type: CreateTutoDTO,
-    description: `Le champ "name" est optionnel (il faut que je supprimes ça dans une future maj)`,
   })
   @Post()
   async setTuto(
     @Req() req: { user: TokenPayloadInterface },
     @Body() createTuto: CreateTutoDTO,
   ): Promise<void> {
+    createTuto.board = createTuto.board.map((b) => parseInt(b as any));
     return await this.tutoService.setTutos(req.user.sub, createTuto);
   }
 

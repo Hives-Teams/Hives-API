@@ -134,15 +134,25 @@ export class TutoService {
         longUrl.request._redirectable._options.href.split('?')[0];
     }
 
-    await this.boardBelongToUser(id, createTuto.board);
+    // await this.boardBelongToUser(id, createTuto.board);
 
-    await this.prisma.tuto.create({
-      data: {
+    const data: {
+      URL: string;
+      idSocial: number;
+      idBoard: number;
+    }[] = [];
+
+    for (const b of createTuto.board) {
+      const tuto = {
         URL: createTuto.url,
-        title: createTuto.title,
         idSocial: socialCompatibility.id,
-        idBoard: createTuto.board,
-      },
+        idBoard: b,
+      };
+      data.push(tuto);
+    }
+
+    await this.prisma.tuto.createMany({
+      data: data,
     });
   }
 
