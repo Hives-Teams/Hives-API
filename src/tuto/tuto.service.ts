@@ -30,7 +30,7 @@ export class TutoService {
   }
 
   async getTuto(id: number, idBoard: number): Promise<TutoDTO[]> {
-    await this.boardBelongToUser(id, idBoard);
+    await this.boardBelongtoUser(id, idBoard);
 
     const tuto: TutoDTO[] = await this.prisma.tuto.findMany({
       select: {
@@ -56,7 +56,7 @@ export class TutoService {
     idBoard: number,
     social: string,
   ): Promise<TutoDTO[]> {
-    await this.boardBelongToUser(idUser, idBoard);
+    await this.boardBelongtoUser(idUser, idBoard);
 
     try {
       const socialArray: string[] = JSON.parse(social);
@@ -94,7 +94,7 @@ export class TutoService {
   }
 
   async getSocialByIdBoard(idUser: number, idBoard: number): Promise<string[]> {
-    await this.boardBelongToUser(idUser, idBoard);
+    await this.boardBelongtoUser(idUser, idBoard);
 
     const socialPrisma = await this.prisma.socialNetwork.findMany({
       select: {
@@ -119,6 +119,15 @@ export class TutoService {
   }
 
   async setTutos(id: number, createTuto: CreateTutoDTO): Promise<void> {
+    const boards = await this.getBoardOfUser(id);
+
+    const belongToUser = createTuto.board.every((b) => boards.includes(b));
+
+    if (!belongToUser)
+      throw new ForbiddenException(
+        "au moins un board n'existe pas pour cette utilisateur",
+      );
+
     if (!this.isValidUrl(createTuto.url))
       throw new BadRequestException('Pas une URL');
 
@@ -134,15 +143,23 @@ export class TutoService {
         longUrl.request._redirectable._options.href.split('?')[0];
     }
 
-    await this.boardBelongToUser(id, createTuto.board);
+    const data: {
+      URL: string;
+      idSocial: number;
+      idBoard: number;
+    }[] = [];
 
-    await this.prisma.tuto.create({
-      data: {
+    for (const b of createTuto.board) {
+      const tuto = {
         URL: createTuto.url,
-        title: createTuto.title,
         idSocial: socialCompatibility.id,
-        idBoard: createTuto.board,
-      },
+        idBoard: b,
+      };
+      data.push(tuto);
+    }
+
+    await this.prisma.tuto.createMany({
+      data: data,
     });
   }
 
@@ -158,7 +175,7 @@ export class TutoService {
 
     if (!idBoard) throw new BadRequestException("Le tuto n'existe pas");
 
-    await this.boardBelongToUser(idUser, idBoard.idBoard);
+    await this.boardBelongtoUser(idUser, idBoard.idBoard);
 
     await this.prisma.tuto.delete({
       where: {
@@ -171,22 +188,29 @@ export class TutoService {
     this.social = await this.prisma.socialNetwork.findMany();
   }
 
-  private async boardBelongToUser(
+  private async boardBelongtoUser(
     idUser: number,
     idBoard: number,
   ): Promise<void> {
-    const user = await this.prisma.board.findUnique({
+    const boards = await this.getBoardOfUser(idUser);
+
+    const belongToUser = boards.filter((b) => b == idBoard);
+
+    if (!belongToUser.length)
+      throw new ForbiddenException('Board non existant pour cette utilisateur');
+  }
+
+  private async getBoardOfUser(idUser: number): Promise<number[]> {
+    const boardObject = await this.prisma.board.findMany({
       where: {
-        id: idBoard,
         idUser: idUser,
       },
-      include: {
-        user: true,
-      },
     });
-
-    if (!user)
-      throw new ForbiddenException('Board non existant pour cette utilisateur');
+    const boardArray: number[] = [];
+    for (const b of boardObject) {
+      boardArray.push(b.id);
+    }
+    return boardArray;
   }
 
   private isValidUrl(url: string): boolean {

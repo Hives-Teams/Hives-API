@@ -35,6 +35,7 @@ services:
       - REFRESH=${REFRESH}
       - DATABASE_URL=${DATABASE_URL}
       - PORT=${PORT}
+      - EXPO_ACCESS_TOKEN="${EXPO_ACCESS_TOKEN}"
     restart: always
     ports:
       - 3000:3000

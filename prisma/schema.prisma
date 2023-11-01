@@ -60,7 +60,7 @@ model Board {
 
 model Tuto {
   id             Int           @id @default(autoincrement())
-  title          String
+  title          String?
   SocialNetworks SocialNetwork @relation(fields: [idSocial], references: [id])
   idSocial       Int
   URL            String
