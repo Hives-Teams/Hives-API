@@ -153,6 +153,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtRefreshGuard)
   @ApiBody({
+    type: DeviceDTO,
     description: 'Vous devez donner un idDevice qui soit valide',
   })
   @Post('refresh')
