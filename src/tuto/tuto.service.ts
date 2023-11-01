@@ -30,12 +30,7 @@ export class TutoService {
   }
 
   async getTuto(id: number, idBoard: number): Promise<TutoDTO[]> {
-    const boards = await this.getBoardOfUser(id);
-
-    const belongToUser = boards.filter((b) => b == idBoard);
-
-    if (!belongToUser.length)
-      throw new ForbiddenException('Board non existant pour cette utilisateur');
+    await this.boardBelongtoUser(id, idBoard);
 
     const tuto: TutoDTO[] = await this.prisma.tuto.findMany({
       select: {
@@ -61,12 +56,7 @@ export class TutoService {
     idBoard: number,
     social: string,
   ): Promise<TutoDTO[]> {
-    const boards = await this.getBoardOfUser(idUser);
-
-    const belongToUser = boards.filter((b) => b == idBoard);
-
-    if (!belongToUser.length)
-      throw new ForbiddenException('Board non existant pour cette utilisateur');
+    await this.boardBelongtoUser(idUser, idBoard);
 
     try {
       const socialArray: string[] = JSON.parse(social);
@@ -104,12 +94,7 @@ export class TutoService {
   }
 
   async getSocialByIdBoard(idUser: number, idBoard: number): Promise<string[]> {
-    const boards = await this.getBoardOfUser(idUser);
-
-    const belongToUser = boards.filter((b) => b == idBoard);
-
-    if (!belongToUser.length)
-      throw new ForbiddenException('Board non existant pour cette utilisateur');
+    await this.boardBelongtoUser(idUser, idBoard);
 
     const socialPrisma = await this.prisma.socialNetwork.findMany({
       select: {
@@ -190,12 +175,7 @@ export class TutoService {
 
     if (!idBoard) throw new BadRequestException("Le tuto n'existe pas");
 
-    const boards = await this.getBoardOfUser(idUser);
-
-    const belongToUser = boards.filter((b) => b == idBoard.idBoard);
-
-    if (!belongToUser.length)
-      throw new ForbiddenException('Board non existant pour cette utilisateur');
+    await this.boardBelongtoUser(idUser, idBoard.idBoard);
 
     await this.prisma.tuto.delete({
       where: {
@@ -206,6 +186,18 @@ export class TutoService {
 
   private async listSocial(): Promise<void> {
     this.social = await this.prisma.socialNetwork.findMany();
+  }
+
+  private async boardBelongtoUser(
+    idUser: number,
+    idBoard: number,
+  ): Promise<void> {
+    const boards = await this.getBoardOfUser(idUser);
+
+    const belongToUser = boards.filter((b) => b == idBoard);
+
+    if (!belongToUser.length)
+      throw new ForbiddenException('Board non existant pour cette utilisateur');
   }
 
   private async getBoardOfUser(idUser: number): Promise<number[]> {
