@@ -1,6 +1,7 @@
 FROM node:18-alpine as dev
-RUN npm i -g @nestjs/cli@latest
-RUN npm i -g npm-check-updates@latest
+ARG CACHEBUST=1
+RUN npm i -g @nestjs/cli
+RUN npm i -g npm-check-updates
 USER node
 WORKDIR /develop
 EXPOSE 3000

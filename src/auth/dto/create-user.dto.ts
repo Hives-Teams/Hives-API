@@ -23,4 +23,9 @@ export class CreateUserDTO {
     message: '8 caractères min, 1 majuscule et 1 caractère spécial',
   })
   password: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  codeBeta: string;
 }

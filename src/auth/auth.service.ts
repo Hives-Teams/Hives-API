@@ -20,6 +20,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import dayjs from 'dayjs';
 import { createHash } from 'crypto';
 import { NotificationDTO } from './dto/notification.dto';
+import crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -30,10 +31,19 @@ export class AuthService {
   ) {}
 
   async register(user: CreateUserDTO): Promise<IdUserDTO> {
+    const codeExist = await this.prisma.codeBeta.findUnique({
+      where: {
+        code: user.codeBeta,
+      },
+    });
+
+    if (!codeExist) throw new UnauthorizedException("Ce code n'existe pas");
+
+    if (codeExist.idUser) throw new UnauthorizedException('Code déjà utilisés');
+
     const userExist = await this.userExist(user.email);
-    if (userExist) {
+    if (userExist)
       throw new ConflictException('Cet email est déjà associé à un compte');
-    }
 
     const hashpwd = await this.hash(user.password);
 
@@ -54,11 +64,27 @@ export class AuthService {
     });
 
     try {
+      await this.prisma.codeBeta.update({
+        where: {
+          code: user.codeBeta,
+        },
+        data: {
+          idUser: newUser.id,
+        },
+      });
       await this.mailService.sendConfirmationMail(user.email, activationCode);
       return {
         id: newUser.id,
       };
     } catch (error) {
+      await this.prisma.codeBeta.update({
+        where: {
+          code: user.codeBeta,
+        },
+        data: {
+          idUser: null,
+        },
+      });
       await this.prisma.user.delete({
         where: {
           id: newUser.id,
@@ -370,6 +396,34 @@ export class AuthService {
     };
   }
 
+  async verifyCode(code: string): Promise<string> {
+    const codeExist = await this.prisma.codeBeta.findUnique({
+      where: {
+        code: code,
+      },
+    });
+
+    if (!codeExist) throw new UnauthorizedException("Ce code n'existe pas");
+
+    if (codeExist.idUser) throw new UnauthorizedException('Code déjà utilisés');
+
+    return 'Le code est correct';
+  }
+
+  async createCode(): Promise<string> {
+    try {
+      const code = crypto.randomBytes(10).toString('hex');
+      await this.prisma.codeBeta.create({
+        data: {
+          code: code,
+        },
+      });
+      return code;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
   private async hash(key: string): Promise<string> {
     const salt = await bcrypt.genSalt(10);
 
@@ -396,6 +450,14 @@ export class AuthService {
           await this.prisma.user.delete({
             where: {
               id: u.id,
+            },
+          });
+          await this.prisma.codeBeta.update({
+            where: {
+              idUser: u.id,
+            },
+            data: {
+              idUser: null,
             },
           });
         }
