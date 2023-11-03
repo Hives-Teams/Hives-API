@@ -180,6 +180,7 @@ export class AuthController {
   @ApiOkResponse({
     type: String,
   })
+  @HttpCode(HttpStatus.OK)
   @Post('code/verify')
   async verifyCode(@Body() code: VerifyCodeDTO): Promise<string> {
     return await this.authService.verifyCode(code.code);
