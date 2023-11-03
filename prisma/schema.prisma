@@ -17,8 +17,10 @@ model SocialNetwork {
 }
 
 model CodeBeta {
-  id   Int    @id @default(autoincrement())
-  code String @unique
+  id     Int    @id @default(autoincrement())
+  code   String @unique
+  user   User?   @relation(fields: [idUser], references: [id])
+  idUser Int? @unique
 }
 
 model User {
@@ -32,6 +34,7 @@ model User {
   Board            Board[]
   RefreshTokenUser RefreshTokenUser[]
   ForgotPassword   ForgotPassword[]
+  CodeBeta         CodeBeta?
   createdAt        DateTime           @default(now())
 }
 
