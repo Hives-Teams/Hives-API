@@ -30,6 +30,7 @@ import { ChangeForgotPasswordDTO } from './dto/change-forgot-password.dto';
 import { DeviceDTO } from './dto/device.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { NotificationDTO } from './dto/notification.dto';
+import { CodeGuard } from 'src/jwt/guards/code.guard';
 
 @ApiTags('auth')
 @ApiBearerAuth()
@@ -169,5 +170,17 @@ export class AuthController {
   async test(): Promise<string> {
     const test = 'salut';
     return test;
+  }
+
+  @UseGuards(CodeGuard)
+  @ApiOperation({
+    summary: "Crée un code pour la création d'un compte",
+  })
+  @ApiCreatedResponse({
+    type: String,
+  })
+  @Post('code/generate')
+  async createCode(): Promise<string> {
+    return await this.authService.createCode();
   }
 }

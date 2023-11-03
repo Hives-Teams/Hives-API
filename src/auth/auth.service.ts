@@ -20,6 +20,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import dayjs from 'dayjs';
 import { createHash } from 'crypto';
 import { NotificationDTO } from './dto/notification.dto';
+import crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -368,6 +369,20 @@ export class AuthService {
       access_token: access_token,
       refresh_token: refresh_token,
     };
+  }
+
+  async createCode(): Promise<string> {
+    try {
+      const code = crypto.randomBytes(10).toString('hex');
+      await this.prisma.codeBeta.create({
+        data: {
+          code: code,
+        },
+      });
+      return code;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   private async hash(key: string): Promise<string> {
