@@ -8,17 +8,7 @@ import { join } from 'path';
   imports: [
     MailerModule.forRootAsync({
       useFactory: () => ({
-        transport: {
-          host: process.env.MAIL_HOST,
-          secure: false,
-          auth: {
-            user: process.env.MAIL_USER,
-            pass: process.env.MAIL_PASSWORD,
-          },
-        },
-        defaults: {
-          from: '"nest-modules" <modules@nestjs.com>',
-        },
+        transport: 'smtps://user@domain.com:pass@smtp.domain.com',
         template: {
           dir: join(__dirname, 'templates'),
           adapter: new HandlebarsAdapter(),
