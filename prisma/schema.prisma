@@ -17,10 +17,11 @@ model SocialNetwork {
 }
 
 model CodeBeta {
-  id     Int    @id @default(autoincrement())
-  code   String @unique
-  user   User?   @relation(fields: [idUser], references: [id])
-  idUser Int? @unique
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  user      User?    @relation(fields: [idUser], references: [id])
+  idUser    Int?     @unique
+  createdAt DateTime @default(now())
 }
 
 model User {
