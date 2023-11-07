@@ -289,8 +289,6 @@ export class TutoService {
     const chunks = expo.chunkPushNotifications(messages);
     const tickets = await this.sendNotifications(chunks, expo);
 
-    console.log(tickets);
-
     // // 15 min
     await setTimeout(900000);
 
