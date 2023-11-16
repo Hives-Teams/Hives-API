@@ -21,6 +21,7 @@ import {
 import { CreateBoardDTO } from './dto/create-board.dto';
 import { CreateInBoardDTO } from './dto/create-in-board.dto';
 import { DeleteBoardDTO } from './dto/delete-board.dto';
+import { BoardModel } from '@prisma/client';
 
 @UseGuards(JwtGuard)
 @ApiTags('board')
@@ -41,6 +42,11 @@ export class BoardController {
     @Req() req: { user: TokenPayloadInterface },
   ): Promise<BoardDTO[]> {
     return await this.boardService.getBoard(req.user.sub);
+  }
+
+  @Get('model')
+  async getModelBoard(): Promise<BoardModel[]> {
+    return await this.boardService.getBoardModel();
   }
 
   @ApiOperation({

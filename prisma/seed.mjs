@@ -18,6 +18,28 @@ async function main() {
     ],
     skipDuplicates: true,
   });
+
+  await prisma.boardModel.createMany({
+    data: [
+      {
+        id: 1,
+        name: 'les trucs de dev la',
+      },
+      {
+        id: 2,
+        name: 'les trucs de da je sais pas moi photoshop et tous',
+      },
+      {
+        id: 3,
+        name: 'juste le market',
+      },
+      {
+        id: 4,
+        name: 'rien',
+      },
+    ],
+    skipDuplicates: true,
+  });
 }
 main()
   .then(async () => {
