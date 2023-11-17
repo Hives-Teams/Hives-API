@@ -6,11 +6,10 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { BoardDTO } from './dto/board.dto';
 import { CreateInBoardDTO } from './dto/create-in-board.dto';
-import { BoardModel } from '@prisma/client';
 
 @Injectable()
 export class BoardService {
-  board: BoardModel[];
+  board: string[] = [];
 
   constructor(private readonly prisma: PrismaService) {
     this.listBoard();
@@ -36,11 +35,14 @@ export class BoardService {
     return data;
   }
 
-  async getBoardModel(): Promise<BoardModel[]> {
+  async getBoardModel(): Promise<string[]> {
     return this.board;
   }
 
   async setBoard(id: number, name: string): Promise<void> {
+    if (!this.board.includes(name))
+      throw new BadRequestException('Nom de board incorrect');
+
     try {
       await this.prisma.board.create({
         data: {
@@ -96,6 +98,13 @@ export class BoardService {
   }
 
   private async listBoard(): Promise<void> {
-    this.board = await this.prisma.boardModel.findMany();
+    const board = await this.prisma.boardModel.findMany({
+      select: {
+        name: true,
+      },
+    });
+    board.forEach((b) => {
+      this.board.push(b.name);
+    });
   }
 }
