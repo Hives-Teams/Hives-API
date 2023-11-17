@@ -143,6 +143,11 @@ export class TutoService {
         longUrl.request._redirectable._options.href.split('?')[0];
     }
 
+    if (socialCompatibility.name == 'instagram') {
+      if (!/\/\//.test(createTuto.url))
+        createTuto.url = createTuto.url.replace(/^(https:)(\/)/, '$1/$2');
+    }
+
     const data: {
       URL: string;
       idSocial: number;
