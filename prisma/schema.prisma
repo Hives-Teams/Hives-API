@@ -16,6 +16,11 @@ model SocialNetwork {
   Tuto Tuto[]
 }
 
+model BoardModel {
+  id Int @id
+  name String
+}
+
 model CodeBeta {
   id        Int      @id @default(autoincrement())
   code      String   @unique

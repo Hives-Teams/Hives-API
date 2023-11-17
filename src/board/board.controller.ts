@@ -44,6 +44,18 @@ export class BoardController {
   }
 
   @ApiOperation({
+    summary: 'Renvoi la liste des noms de boards imposé',
+  })
+  @ApiOkResponse({
+    type: String,
+    isArray: true,
+  })
+  @Get('model')
+  async getModelBoard(): Promise<string[]> {
+    return await this.boardService.getBoardModel();
+  }
+
+  @ApiOperation({
     summary: 'Créer un nouveau board',
   })
   @ApiCreatedResponse()

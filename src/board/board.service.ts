@@ -9,7 +9,11 @@ import { CreateInBoardDTO } from './dto/create-in-board.dto';
 
 @Injectable()
 export class BoardService {
-  constructor(private readonly prisma: PrismaService) {}
+  board: string[] = [];
+
+  constructor(private readonly prisma: PrismaService) {
+    this.listBoard();
+  }
 
   async getBoard(id: number): Promise<BoardDTO[]> {
     const data: BoardDTO[] = await this.prisma.board.findMany({
@@ -31,7 +35,14 @@ export class BoardService {
     return data;
   }
 
+  async getBoardModel(): Promise<string[]> {
+    return this.board;
+  }
+
   async setBoard(id: number, name: string): Promise<void> {
+    if (!this.board.includes(name))
+      throw new BadRequestException('Nom de board incorrect');
+
     try {
       await this.prisma.board.create({
         data: {
@@ -84,5 +95,16 @@ export class BoardService {
     } catch (error) {
       throw new BadRequestException();
     }
+  }
+
+  private async listBoard(): Promise<void> {
+    const board = await this.prisma.boardModel.findMany({
+      select: {
+        name: true,
+      },
+    });
+    board.forEach((b) => {
+      this.board.push(b.name);
+    });
   }
 }

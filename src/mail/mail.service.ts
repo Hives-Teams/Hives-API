@@ -23,7 +23,7 @@ export class MailService {
       oauth2Client.getAccessToken((err, token) => {
         if (err) {
           console.error(err.config);
-          reject('Failed to create access token');
+          reject('Erreur lors de la création du compte : error EMAIL');
         }
         resolve(token);
       });
