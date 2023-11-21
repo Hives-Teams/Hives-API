@@ -58,12 +58,15 @@ export class BoardController {
   @ApiOperation({
     summary: 'Créer un nouveau board',
   })
+  @ApiCreatedResponse({
+    type: Number,
+  })
   @ApiCreatedResponse()
   @Post()
   async setBoard(
     @Req() req: { user: TokenPayloadInterface },
     @Body() board: CreateBoardDTO,
-  ): Promise<void> {
+  ): Promise<number> {
     return await this.boardService.setBoard(req.user.sub, board.name);
   }
 

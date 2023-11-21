@@ -39,17 +39,18 @@ export class BoardService {
     return this.board;
   }
 
-  async setBoard(id: number, name: string): Promise<void> {
+  async setBoard(id: number, name: string): Promise<number> {
     if (!this.board.includes(name))
       throw new BadRequestException('Nom de board incorrect');
 
     try {
-      await this.prisma.board.create({
+      const board = await this.prisma.board.create({
         data: {
           name: name,
           idUser: id,
         },
       });
+      return board.id;
     } catch (error) {
       throw new BadRequestException(error);
     }

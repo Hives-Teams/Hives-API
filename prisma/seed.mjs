@@ -23,19 +23,19 @@ async function main() {
     data: [
       {
         id: 1,
-        name: 'les trucs de dev la',
+        name: 'Never gonna give you up',
       },
       {
         id: 2,
-        name: 'les trucs de da je sais pas moi photoshop et tous',
+        name: 'Never gonna let you down',
       },
       {
         id: 3,
-        name: 'juste le market',
+        name: 'Never gonna run around and desert you',
       },
       {
         id: 4,
-        name: 'rien',
+        name: 'Never gonna make you cry',
       },
     ],
     skipDuplicates: true,
