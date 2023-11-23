@@ -1,5 +1,6 @@
 FROM node:18-alpine as dev
 ARG CACHEBUST=1
+RUN apk --no-cache add git
 RUN npm i -g @nestjs/cli
 RUN npm i -g npm-check-updates
 USER node
