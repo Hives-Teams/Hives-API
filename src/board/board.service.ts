@@ -9,11 +9,7 @@ import { CreateInBoardDTO } from './dto/create-in-board.dto';
 
 @Injectable()
 export class BoardService {
-  board: string[] = [];
-
-  constructor(private readonly prisma: PrismaService) {
-    this.listBoard();
-  }
+  constructor(private readonly prisma: PrismaService) {}
 
   async getBoard(id: number): Promise<BoardDTO[]> {
     const data: BoardDTO[] = await this.prisma.board.findMany({
@@ -36,11 +32,30 @@ export class BoardService {
   }
 
   async getBoardModel(): Promise<string[]> {
-    return this.board;
+    const board = await this.prisma.boardModel.findMany({
+      select: {
+        name: true,
+      },
+    });
+    const boardArray: string[] = [];
+    board.forEach((b) => {
+      boardArray.push(b.name);
+    });
+    return boardArray;
   }
 
   async setBoard(id: number, name: string): Promise<number> {
-    if (!this.board.includes(name))
+    const boardModel = await this.prisma.boardModel.findMany({
+      select: {
+        name: true,
+      },
+    });
+    const boardArray: string[] = [];
+    boardModel.forEach((b) => {
+      boardArray.push(b.name);
+    });
+
+    if (!boardArray.includes(name))
       throw new BadRequestException('Nom de board incorrect');
 
     try {
@@ -96,16 +111,5 @@ export class BoardService {
     } catch (error) {
       throw new BadRequestException();
     }
-  }
-
-  private async listBoard(): Promise<void> {
-    const board = await this.prisma.boardModel.findMany({
-      select: {
-        name: true,
-      },
-    });
-    board.forEach((b) => {
-      this.board.push(b.name);
-    });
   }
 }
