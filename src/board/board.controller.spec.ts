@@ -119,7 +119,7 @@ describe('BoardController', () => {
       expect(await controller.deleteBoard(req, board)).toBe(undefined);
     });
 
-    it.skip('should throw an error if board id is not in board model', async () => {
+    it('should throw an error if board id is not in board model', async () => {
       jest.spyOn(service, 'deleteBoard').mockImplementation(async () => {
         throw new Error();
       });

@@ -66,22 +66,23 @@ describe('BoardService', () => {
     });
   });
 
-  describe.skip('setInBoard', () => {
+  describe('setInBoard', () => {
     it('should create a inBoard', async () => {
-      prisma.board.findFirst = jest.fn().mockResolvedValue({
-        id: 1,
-        InBoard: null,
-        name: 'test',
-        idUser: 1,
-        createdAt: new Date(),
-      });
+      prisma.board.findFirst = jest.fn().mockResolvedValue({ id: 1 });
 
-      const inboard: CreateInBoardDTO = {
-        idBoard: 1,
-        name: 'test',
-      };
+      prisma.board.create = jest.fn().mockResolvedValue({ id: 1 });
 
-      expect(await service.setInBoard(1, inboard)).toBeUndefined();
+      expect(await service.setInBoard(1, new CreateInBoardDTO())).toBe(
+        undefined,
+      );
+    });
+
+    it('should throw an error if board id is incorrect', async () => {
+      prisma.board.findFirst = jest.fn().mockResolvedValue(null);
+
+      await expect(
+        service.setInBoard(1, new CreateInBoardDTO()),
+      ).rejects.toThrow('Board non existant pour cette utilisateur');
     });
   });
 
