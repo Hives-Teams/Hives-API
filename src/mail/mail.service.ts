@@ -1,5 +1,5 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { google } from 'googleapis';
 import { Options } from 'nodemailer/lib/smtp-transport';
 
@@ -22,8 +22,8 @@ export class MailService {
     const accessToken: string = await new Promise((resolve, reject) => {
       oauth2Client.getAccessToken((err, token) => {
         if (err) {
-          console.error(err.config);
-          reject('Erreur lors de la création du compte : error EMAIL');
+          Logger.error(err.response.data.error_description, 'mail.service');
+          reject(`Erreur lors de la création du compte : email non envoyé`);
         }
         resolve(token);
       });
@@ -36,7 +36,7 @@ export class MailService {
         user: process.env.EMAIL,
         clientId: process.env.CLIENT_ID_MAIL,
         clientSecret: process.env.CLIENT_SECRET_MAIL,
-        accessToken,
+        accessToken: accessToken,
       },
     };
     this.mailerService.addTransporter('gmail', config);
