@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -113,6 +114,28 @@ export class AuthController {
   @Post('login')
   async login(@Body() user: ConnectUserDTO): Promise<TokenDTO> {
     return await this.authService.login(user);
+  }
+
+  @ApiOperation({
+    summary: "Deconnecte l'appareil de l'app",
+  })
+  @ApiBody({
+    type: DeviceDTO,
+    examples: {
+      deconnexion: {
+        value: {
+          idDevice: uuidv4(),
+        },
+      },
+    },
+  })
+  @UseGuards(JwtGuard)
+  @Delete('disconnect')
+  async disconnect(
+    @Req() req: { user: TokenPayloadInterface },
+    @Body() device: DeviceDTO,
+  ): Promise<void> {
+    return await this.authService.disconnect(req.user.sub, device.idDevice);
   }
 
   @UseGuards(JwtGuard)

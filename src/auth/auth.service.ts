@@ -4,6 +4,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDTO } from './dto/create-user.dto';
@@ -197,6 +198,26 @@ export class AuthService {
     });
 
     return jwt;
+  }
+
+  async disconnect(id: number, idDevice: string): Promise<void> {
+    try {
+      await this.prisma.refreshTokenUser.delete({
+        where: {
+          idDevice: idDevice,
+          idUser: id,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      if (error.code == 'P2025') {
+        Logger.error(error.meta.cause, 'Disconnect');
+        throw new ForbiddenException(
+          "Cette appareil n'appartient pas à cette utilisateur",
+        );
+      }
+      throw new ForbiddenException('Erreur inconnu');
+    }
   }
 
   async setTokenNotification(
