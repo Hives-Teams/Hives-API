@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTutoDTO } from './dto/create-tuto.dto';
-import { SocialInterface } from 'src/interfaces/Social.interface';
 import detectSocialNetwork from 'detect-social-network';
 import { TutoDTO } from './dto/tuto.dto';
 import { HttpService } from '@nestjs/axios';
@@ -18,16 +17,14 @@ import {
 import { PhoneNotification } from 'src/interfaces/phone-notification.interface';
 import { setTimeout } from 'timers/promises';
 import { Cron } from '@nestjs/schedule';
+import { SocialNetwork } from '@prisma/client';
 
 @Injectable()
 export class TutoService {
-  social: SocialInterface[];
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly httpService: HttpService,
-  ) {
-    this.listSocial();
-  }
+    readonly prisma: PrismaService,
+    readonly httpService: HttpService,
+  ) {}
 
   async getTuto(id: number, idBoard: number): Promise<TutoDTO[]> {
     await this.boardBelongtoUser(id, idBoard);
@@ -132,7 +129,8 @@ export class TutoService {
       throw new BadRequestException('Pas une URL');
 
     const url = detectSocialNetwork(createTuto.url);
-    const socialCompatibility = this.social.find((s) => s.name == url);
+    const social = await this.listSocial();
+    const socialCompatibility = social.find((s) => s.name == url);
 
     if (!socialCompatibility)
       throw new BadRequestException('Réseau social non compatible');
@@ -212,14 +210,11 @@ export class TutoService {
     });
   }
 
-  private async listSocial(): Promise<void> {
-    this.social = await this.prisma.socialNetwork.findMany();
+  async listSocial(): Promise<SocialNetwork[]> {
+    return await this.prisma.socialNetwork.findMany();
   }
 
-  private async boardBelongtoUser(
-    idUser: number,
-    idBoard: number,
-  ): Promise<void> {
+  async boardBelongtoUser(idUser: number, idBoard: number): Promise<void> {
     const boards = await this.getBoardOfUser(idUser);
 
     const belongToUser = boards.filter((b) => b == idBoard);
@@ -228,7 +223,7 @@ export class TutoService {
       throw new ForbiddenException('Board non existant pour cette utilisateur');
   }
 
-  private async getBoardOfUser(idUser: number): Promise<number[]> {
+  async getBoardOfUser(idUser: number): Promise<number[]> {
     const boardObject = await this.prisma.board.findMany({
       where: {
         idUser: idUser,
@@ -241,7 +236,7 @@ export class TutoService {
     return boardArray;
   }
 
-  private isValidUrl(url: string): boolean {
+  isValidUrl(url: string): boolean {
     try {
       return Boolean(new URL(url));
     } catch (error) {
@@ -333,7 +328,7 @@ export class TutoService {
     await this.errorNotifications(receiptIdChunks, expo, userWithNotif);
   }
 
-  private async sendNotifications(
+  async sendNotifications(
     chunks: ExpoPushMessage[][],
     expo: Expo,
   ): Promise<ExpoPushTicket[]> {
@@ -351,7 +346,7 @@ export class TutoService {
     return tickets;
   }
 
-  private async errorNotifications(
+  async errorNotifications(
     receiptIdChunks: string[][],
     expo: Expo,
     idArray: {
