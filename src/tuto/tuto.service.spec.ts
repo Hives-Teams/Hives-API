@@ -138,4 +138,28 @@ describe('TutoService', () => {
       );
     });
   });
+
+  describe('deleteTuto', () => {
+    it('should return an array of string', async () => {
+      jest
+        .spyOn(service, 'boardBelongtoUser')
+        .mockImplementation(
+          async () => await new Promise((resolve) => resolve()),
+        );
+
+      prisma.tuto.delete = jest.fn().mockResolvedValue({ id: 1 });
+
+      expect(await service.deleteTuto(1, 1)).toStrictEqual({ id: 1 });
+    });
+
+    it('should throw an error if user is incorrect', async () => {
+      jest.spyOn(service, 'boardBelongtoUser').mockImplementation(() => {
+        throw new Error('Ce board ne vous appartient pas');
+      });
+
+      await expect(service.deleteTuto(2, 1)).rejects.toThrow(
+        'Ce board ne vous appartient pas',
+      );
+    });
+  });
 });
