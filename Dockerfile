@@ -1,4 +1,4 @@
-FROM node:18-alpine as dev
+FROM node:20-alpine as dev
 ARG CACHEBUST=1
 RUN apk --no-cache add git
 RUN npm i -g @nestjs/cli
@@ -8,13 +8,13 @@ WORKDIR /develop
 EXPOSE 3000
 EXPOSE 9229
 
-FROM node:18-alpine as build
+FROM node:20-alpine as build
 WORKDIR /build
 COPY . .
 RUN npm ci
 RUN npm run build
 
-FROM node:18-alpine as prod
+FROM node:20-alpine as prod
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /build/package.json /app
