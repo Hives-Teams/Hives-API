@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { BoardDTO } from './dto/board.dto';
@@ -56,7 +57,26 @@ export class BoardService {
     });
 
     if (!boardArray.includes(name))
-      throw new BadRequestException('Nom de board incorrect');
+      throw new BadRequestException('Nom du Hives incorrect');
+
+    const boardUserObject = await this.prisma.board.findMany({
+      select: {
+        name: true,
+      },
+      where: {
+        idUser: id,
+      },
+    });
+
+    const boardUser: string[] = [];
+    boardUserObject.forEach((b) => {
+      boardUser.push(b.name);
+    });
+
+    if (boardUser.includes(name))
+      throw new BadRequestException(
+        'Vous avez déjà ajouté un Hives avec ce nom.',
+      );
 
     try {
       const board = await this.prisma.board.create({
@@ -67,7 +87,8 @@ export class BoardService {
       });
       return board.id;
     } catch (error) {
-      throw new BadRequestException(error);
+      Logger.error(error, 'setBoard');
+      throw new BadRequestException('Erreur lors de la création du board');
     }
   }
 
