@@ -23,19 +23,27 @@ async function main() {
     data: [
       {
         id: 1,
-        name: 'Never gonna give you up',
+        name: 'Marketing digital',
       },
       {
         id: 2,
-        name: 'Never gonna let you down',
+        name: 'UX-UI',
       },
       {
         id: 3,
-        name: 'Never gonna run around and desert you',
+        name: 'Développement',
       },
       {
         id: 4,
-        name: 'Never gonna make you cry',
+        name: 'Graphisme digital',
+      },
+      {
+        id: 5,
+        name: 'Vidéo',
+      },
+      {
+        id: 6,
+        name: 'Photographie',
       },
     ],
     skipDuplicates: true,
