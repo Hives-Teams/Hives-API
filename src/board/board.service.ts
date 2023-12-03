@@ -17,6 +17,11 @@ export class BoardService {
       select: {
         id: true,
         name: true,
+        boardImage: {
+          select: {
+            name: true,
+          },
+        },
       },
       where: {
         AND: [
@@ -45,7 +50,7 @@ export class BoardService {
     return boardArray;
   }
 
-  async setBoard(id: number, name: string): Promise<number> {
+  async setBoard(id: number, name: string, image: string): Promise<number> {
     const boardModel = await this.prisma.boardModel.findMany({
       select: {
         name: true,
@@ -75,19 +80,31 @@ export class BoardService {
 
     if (boardUser.includes(name))
       throw new BadRequestException(
-        'Vous avez déjà ajouté un Hives avec ce nom.',
+        'Vous avez déjà ajouté un Board avec ce nom.',
       );
 
     try {
       const board = await this.prisma.board.create({
         data: {
           name: name,
-          idUser: id,
+          user: {
+            connect: {
+              id: id,
+            },
+          },
+          boardImage: {
+            connect: {
+              name: image,
+            },
+          },
         },
       });
       return board.id;
     } catch (error) {
-      Logger.error(error, 'setBoard');
+      Logger.error(error.meta.cause, 'setBoard');
+      if (error.code == 'P2025') {
+        throw new BadRequestException('Image de board incorrect');
+      }
       throw new BadRequestException('Erreur lors de la création du board');
     }
   }

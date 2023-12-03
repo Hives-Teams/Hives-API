@@ -16,11 +16,6 @@ model SocialNetwork {
   Tuto Tuto[]
 }
 
-model BoardModel {
-  id Int @id
-  name String
-}
-
 model CodeBeta {
   id        Int      @id @default(autoincrement())
   code      String   @unique
@@ -63,13 +58,26 @@ model RefreshTokenUser {
 }
 
 model Board {
-  id        Int      @id @default(autoincrement())
-  InBoard   Int?
-  name      String
-  user      User     @relation(fields: [idUser], references: [id])
-  idUser    Int
-  Tuto      Tuto[]
-  createdAt DateTime @default(now())
+  id         Int        @id @default(autoincrement())
+  InBoard    Int?
+  name       String
+  boardImage BoardImage? @relation(fields: [idImage], references: [id])
+  idImage    Int?        @unique
+  user       User       @relation(fields: [idUser], references: [id])
+  idUser     Int
+  Tuto       Tuto[]
+  createdAt  DateTime   @default(now())
+}
+
+model BoardModel {
+  id   Int    @id
+  name String
+}
+
+model BoardImage {
+  id    Int    @id
+  name  String @unique
+  board Board[]
 }
 
 model Tuto {

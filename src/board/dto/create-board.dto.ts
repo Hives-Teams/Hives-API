@@ -5,4 +5,8 @@ export class CreateBoardDTO {
   @ApiProperty()
   @IsNotEmpty()
   name: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  image: string;
 }
