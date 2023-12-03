@@ -17,6 +17,11 @@ export class BoardService {
       select: {
         id: true,
         name: true,
+        boardImage: {
+          select: {
+            name: true,
+          },
+        },
       },
       where: {
         AND: [
