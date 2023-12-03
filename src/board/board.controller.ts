@@ -67,7 +67,11 @@ export class BoardController {
     @Req() req: { user: TokenPayloadInterface },
     @Body() board: CreateBoardDTO,
   ): Promise<number> {
-    return await this.boardService.setBoard(req.user.sub, board.name);
+    return await this.boardService.setBoard(
+      req.user.sub,
+      board.name,
+      board.image,
+    );
   }
 
   @ApiOperation({
