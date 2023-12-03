@@ -48,6 +48,35 @@ async function main() {
     ],
     skipDuplicates: true,
   });
+
+  await prisma.boardImage.createMany({
+    data: [
+      {
+        id: 1,
+        name: 'Board-3D',
+      },
+      {
+        id: 2,
+        name: 'Board-dev',
+      },
+      {
+        id: 3,
+        name: 'Board-graphic_design',
+      },
+      {
+        id: 4,
+        name: 'Board-marketing',
+      },
+      {
+        id: 5,
+        name: 'Board-ux',
+      },
+      {
+        id: 6,
+        name: 'Board-video',
+      },
+    ],
+  });
 }
 main()
   .then(async () => {
