@@ -211,7 +211,7 @@ export class AuthService {
     } catch (error) {
       console.log(error);
       if (error.code == 'P2025') {
-        Logger.error(error.meta.cause, 'Disconnect');
+        Logger.error(error, 'Disconnect');
         throw new ForbiddenException(
           "Cette appareil n'appartient pas à cette utilisateur",
         );
