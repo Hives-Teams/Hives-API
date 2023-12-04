@@ -58,15 +58,15 @@ model RefreshTokenUser {
 }
 
 model Board {
-  id         Int        @id @default(autoincrement())
+  id         Int         @id @default(autoincrement())
   InBoard    Int?
   name       String
   boardImage BoardImage? @relation(fields: [idImage], references: [id])
-  idImage    Int?        @unique
-  user       User       @relation(fields: [idUser], references: [id])
+  idImage    Int?
+  user       User        @relation(fields: [idUser], references: [id])
   idUser     Int
   Tuto       Tuto[]
-  createdAt  DateTime   @default(now())
+  createdAt  DateTime    @default(now())
 }
 
 model BoardModel {
@@ -75,8 +75,8 @@ model BoardModel {
 }
 
 model BoardImage {
-  id    Int    @id
-  name  String @unique
+  id    Int     @id
+  name  String  @unique
   board Board[]
 }
 

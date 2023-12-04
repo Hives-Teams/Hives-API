@@ -16,7 +16,6 @@ import {
 } from 'expo-server-sdk';
 import { PhoneNotification } from 'src/interfaces/phone-notification.interface';
 import { setTimeout } from 'timers/promises';
-import { Cron } from '@nestjs/schedule';
 import { SocialNetwork } from '@prisma/client';
 
 @Injectable()
@@ -244,7 +243,7 @@ export class TutoService {
     }
   }
 
-  @Cron('0 10 * * *')
+  // @Cron('0 10 * * *')
   async reminderNotifications(): Promise<void> {
     const tokens = await this.prisma.refreshTokenUser.findMany({
       select: {

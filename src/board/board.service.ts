@@ -101,7 +101,7 @@ export class BoardService {
       });
       return board.id;
     } catch (error) {
-      Logger.error(error.meta.cause, 'setBoard');
+      Logger.error(error, 'setBoard');
       if (error.code == 'P2025') {
         throw new BadRequestException('Image de board incorrect');
       }
