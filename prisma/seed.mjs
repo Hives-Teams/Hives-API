@@ -76,6 +76,7 @@ async function main() {
         name: 'Board-video',
       },
     ],
+    skipDuplicates: true,
   });
 }
 main()
