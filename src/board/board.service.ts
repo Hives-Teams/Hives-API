@@ -37,10 +37,28 @@ export class BoardService {
     return data;
   }
 
-  async getBoardModel(): Promise<string[]> {
+  async getBoardModel(idUser: number): Promise<string[]> {
+    const boardUser = await this.prisma.board.findMany({
+      select: {
+        name: true,
+      },
+      where: {
+        idUser: idUser,
+      },
+    });
+    const boardUserArray: string[] = [];
+    boardUser.forEach((b) => {
+      boardUserArray.push(b.name);
+    });
+
     const board = await this.prisma.boardModel.findMany({
       select: {
         name: true,
+      },
+      where: {
+        name: {
+          notIn: boardUserArray,
+        },
       },
     });
     const boardArray: string[] = [];
