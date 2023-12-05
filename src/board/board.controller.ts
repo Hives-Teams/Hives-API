@@ -51,8 +51,10 @@ export class BoardController {
     isArray: true,
   })
   @Get('model')
-  async getModelBoard(): Promise<string[]> {
-    return await this.boardService.getBoardModel();
+  async getModelBoard(
+    @Req() req: { user: TokenPayloadInterface },
+  ): Promise<string[]> {
+    return await this.boardService.getBoardModel(req.user.sub);
   }
 
   @ApiOperation({
