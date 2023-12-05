@@ -65,7 +65,7 @@ async function main() {
       },
       {
         id: 4,
-        name: 'Board-marketing',
+        name: 'Board-market',
       },
       {
         id: 5,
