@@ -13,7 +13,7 @@ jobs:
     steps:
     - name: Copy repository
       uses: actions/checkout@v3
-      
+
     - name: Copy file via ssh
       uses: appleboy/scp-action@v0.1.4
       with:
@@ -21,5 +21,5 @@ jobs:
         username: ${{ secrets.USER }}
         port: ${{ secrets.PORT }}
         key: ${{ secrets.KEY }}
-        source: ""
+        source: "."
         target: api
