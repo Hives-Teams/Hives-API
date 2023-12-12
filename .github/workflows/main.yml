@@ -1,0 +1,22 @@
+name: develop
+
+on:
+  push:
+    branches:
+    - feature/traefik
+  
+jobs:        
+    
+  main:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: copy file via ssh
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        port: ${{ secrets.PORT }}
+        key: ${{ secrets.KEY }}
+        source: "."
+        target: api

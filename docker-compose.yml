@@ -21,7 +21,6 @@ services:
   prod:
     networks:
       - hives-network
-      - nginx-proxy
     depends_on:
       - db
     container_name: hives-backend
@@ -33,12 +32,16 @@ services:
     environment:
       - JWT=${JWT}
       - REFRESH=${REFRESH}
+      - BETA_CODE=${BETA_CODE}
       - DATABASE_URL=${DATABASE_URL}
       - PORT=${PORT}
-      - EXPO_ACCESS_TOKEN="${EXPO_ACCESS_TOKEN}"
     restart: always
     ports:
       - 3000:3000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.localhost`)"
+      - "traefik.http.routers.api.entrypoints=web"
 
   db:
     image: mariadb:lts
@@ -67,5 +70,3 @@ volumes:
 
 networks:
   hives-network:
-  nginx-proxy:
-    external: true
