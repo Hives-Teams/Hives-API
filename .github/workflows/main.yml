@@ -38,3 +38,12 @@ jobs:
         key: ${{ secrets.KEY }}
         source: "."
         target: api
+
+    - name: deploy api
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.KEY }}
+        port: ${{ secrets.PORT }}
+        script: sudo docker compose -f api/docker-compose.yml up --build -d prod
