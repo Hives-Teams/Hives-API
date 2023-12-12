@@ -11,6 +11,7 @@ EXPOSE 9229
 FROM node:20-alpine as build
 WORKDIR /build
 COPY . .
+ARG NODE_OPTIONS="--max-old-space-size=2048"
 RUN npm ci
 RUN npm run build
 
