@@ -35,6 +35,10 @@ services:
       - BETA_CODE=${BETA_CODE}
       - DATABASE_URL=${DATABASE_URL}
       - PORT=${PORT}
+      - EMAIL=${EMAIL}
+      - CLIENT_ID_MAIL=${CLIENT_ID_MAIL}
+      - CLIENT_SECRET_MAIL=${CLIENT_SECRET_MAIL}
+      - REFRESH_TOKEN_MAIL=${REFRESH_TOKEN_MAIL}      
     restart: always
     ports:
       - 3000:3000

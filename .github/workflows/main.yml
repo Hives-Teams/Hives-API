@@ -1,4 +1,4 @@
-name: develop
+name: main
 
 on:
   push:
@@ -13,6 +13,21 @@ jobs:
     steps:
     - name: Copy repository
       uses: actions/checkout@v3
+
+    - name: 'Create env file'
+      run: |
+        touch .env
+        echo MARIADB_ROOT_PASSWORD=${{ secrets.MARIADB_ROOT_PASSWORD }} >> .env
+        echo MARIADB_DATABASE=${{ secrets.MARIADB_DATABASE }} >> .env
+        echo PORT=3000 >> .env
+        echo JWT=${{ secrets.JWT }} >> .env
+        echo REFRESH=${{ secrets.REFRESH }} >> .env
+        echo DATABASE_URL=mysql://root:${{ secrets.MARIADB_ROOT_PASSWORD }}@db:3306/${{ secrets.MARIADB_DATABASE }} >> .env
+        echo EMAIL=${{ secrets.EMAIL }} >> .env
+        echo CLIENT_ID_MAIL=${{ secrets.CLIENT_ID_MAIL }} >> .env
+        echo CLIENT_SECRET_MAIL=${{ secrets.CLIENT_SECRET_MAIL }} >> .env
+        echo REFRESH_TOKEN_MAIL=${{ secrets.REFRESH_TOKEN_MAIL }} >> .env
+        echo BETA_CODE=${{ secrets.BETA_CODE }} >> .env
 
     - name: Copy file via ssh
       uses: appleboy/scp-action@v0.1.4
