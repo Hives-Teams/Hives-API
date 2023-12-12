@@ -9,6 +9,8 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
 
+  // caca prout
+
   const config = new DocumentBuilder()
     .setTitle('Hives Backend')
     .addBearerAuth()
