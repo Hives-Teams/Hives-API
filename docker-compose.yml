@@ -41,15 +41,12 @@ services:
       - CLIENT_SECRET_MAIL=${CLIENT_SECRET_MAIL}
       - REFRESH_TOKEN_MAIL=${REFRESH_TOKEN_MAIL}      
     restart: always
-    ports:
-      - 3000:3000
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=Host(`api.hivesapp.fr`)"
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls.certresolver=myresolver"
-      - "traefik.http.services.api.loadbalancer.server.port=3000"
-
+      
   db:
     image: mariadb:lts
     restart: always

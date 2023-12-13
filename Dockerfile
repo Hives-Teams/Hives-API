@@ -18,11 +18,11 @@ RUN npm run build
 FROM node:20-alpine as prod
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=build /build/package.json /app
-COPY --from=build /build/package-lock.json /app
-COPY --from=build /build/dist /app/dist
-COPY --from=build /build/prisma /app/prisma
+COPY package.json /app
+COPY package-lock.json /app
+COPY dist /app/dist
+COPY prisma /app/prisma
 RUN npm ci
 USER node
-EXPOSE 3000
+EXPOSE 80
 CMD [ "npm", "run", "start:prod:migration" ]
