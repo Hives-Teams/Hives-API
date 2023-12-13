@@ -21,6 +21,7 @@ services:
   prod:
     networks:
       - hives-network
+      - traefik-network
     depends_on:
       - db
     container_name: hives-backend
@@ -75,3 +76,5 @@ volumes:
 
 networks:
   hives-network:
+  traefik-network:
+    external: true
