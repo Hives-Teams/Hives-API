@@ -48,6 +48,7 @@ services:
       - "traefik.http.routers.api.rule=Host(`api.hivesapp.fr`)"
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls.certresolver=myresolver"
+      - "traefik.http.services.api.loadbalancer.server.port=3000"
 
   db:
     image: mariadb:lts
