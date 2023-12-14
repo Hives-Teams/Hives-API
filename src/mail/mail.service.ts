@@ -49,7 +49,7 @@ export class MailService {
       transporterName: 'gmail',
       from: process.env.EMAIL,
       to: email,
-      subject: 'Confirmation code',
+      subject: 'Bienvenue dans la ruche Hives ! 🐝',
       template: 'mail-confirmation.hbs',
       context: {
         code: code,
@@ -65,7 +65,7 @@ export class MailService {
       from: process.env.EMAIL,
       to: email,
       subject: 'Mot de passe oublié',
-      template: 'mail-confirmation.hbs',
+      template: 'mail-oublie.hbs',
       context: {
         code: code,
       },

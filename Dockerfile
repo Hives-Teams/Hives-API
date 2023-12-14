@@ -24,5 +24,5 @@ COPY --from=build /build/dist /app/dist
 COPY --from=build /build/prisma /app/prisma
 RUN npm ci
 USER node
-EXPOSE 80
+EXPOSE 3000
 CMD [ "npm", "run", "start:prod:migration" ]
