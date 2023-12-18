@@ -71,4 +71,16 @@ export class MailService {
       },
     });
   }
+
+  async sendRequestAccountDelete(email: string): Promise<void> {
+    await this.getTransport();
+
+    await this.mailerService.sendMail({
+      transporterName: 'gmail',
+      from: process.env.EMAIL,
+      to: email,
+      subject: 'Suppression de votre compte Hives',
+      template: 'mail-delete.hbs',
+    });
+  }
 }
