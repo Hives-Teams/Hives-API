@@ -31,8 +31,6 @@ import { ChangeForgotPasswordDTO } from './dto/change-forgot-password.dto';
 import { DeviceDTO } from './dto/device.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { NotificationDTO } from './dto/notification.dto';
-import { CodeGuard } from 'src/jwt/guards/code.guard';
-import { VerifyCodeDTO } from './dto/verify-code.dto';
 
 @ApiTags('auth')
 @ApiBearerAuth()
@@ -57,7 +55,6 @@ export class AuthController {
           firstname: 'William',
           lastname: 'Afton',
           password: 'Abcdefg&',
-          codeBeta: 'string',
         },
       },
     },
@@ -195,29 +192,5 @@ export class AuthController {
   async test(): Promise<string> {
     const test = 'salut';
     return test;
-  }
-
-  @ApiOperation({
-    summary: 'Verifie que le code beta est valide',
-  })
-  @ApiOkResponse({
-    type: String,
-  })
-  @HttpCode(HttpStatus.OK)
-  @Post('code/verify')
-  async verifyCode(@Body() code: VerifyCodeDTO): Promise<string> {
-    return await this.authService.verifyCode(code.code);
-  }
-
-  @UseGuards(CodeGuard)
-  @ApiOperation({
-    summary: "Crée un code beta pour la création d'un compte",
-  })
-  @ApiCreatedResponse({
-    type: String,
-  })
-  @Post('code/generate')
-  async createCode(): Promise<string> {
-    return await this.authService.createCode();
   }
 }
