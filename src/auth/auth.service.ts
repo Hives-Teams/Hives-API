@@ -189,6 +189,30 @@ export class AuthService {
     }
   }
 
+  async deleteAccount(email: string, id: number): Promise<void> {
+    try {
+      await this.prisma.refreshTokenUser.deleteMany({
+        where: {
+          idUser: id,
+        },
+      });
+      await this.prisma.board.deleteMany({
+        where: {
+          idUser: id,
+        },
+      });
+      await this.prisma.user.delete({
+        where: {
+          id: id,
+        },
+      });
+      this.mailService.sendRequestAccountDelete(email);
+    } catch (error) {
+      Logger.error(error);
+      throw new BadRequestException(error);
+    }
+  }
+
   async setTokenNotification(
     idUser: number,
     notif: NotificationDTO,

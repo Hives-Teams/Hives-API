@@ -136,6 +136,14 @@ export class AuthController {
   }
 
   @UseGuards(JwtGuard)
+  @Delete('delete')
+  async requestDeleteAccount(
+    @Req() req: { user: TokenPayloadInterface },
+  ): Promise<void> {
+    return await this.authService.deleteAccount(req.user.email, req.user.sub);
+  }
+
+  @UseGuards(JwtGuard)
   @ApiOperation({
     summary:
       'Permet de stocker les tokens unique à chaque appareil pour gérer les notifications',
