@@ -16,14 +16,6 @@ model SocialNetwork {
   Tuto Tuto[]
 }
 
-model CodeBeta {
-  id        Int      @id @default(autoincrement())
-  code      String   @unique
-  user      User?    @relation(fields: [idUser], references: [id])
-  idUser    Int?     @unique
-  createdAt DateTime @default(now())
-}
-
 model User {
   id               Int                @id @default(autoincrement())
   email            String             @unique
@@ -35,7 +27,6 @@ model User {
   Board            Board[]
   RefreshTokenUser RefreshTokenUser[]
   ForgotPassword   ForgotPassword[]
-  CodeBeta         CodeBeta?
   createdAt        DateTime           @default(now())
 }
 
