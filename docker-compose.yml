@@ -53,6 +53,7 @@ services:
     restart: always
     networks:
       - hives-network
+      - db
     environment:
     - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
     - MARIADB_DATABASE=${MARIADB_DATABASE}
@@ -76,4 +77,6 @@ volumes:
 networks:
   hives-network:
   traefik-network:
+    external: true
+  db:
     external: true
