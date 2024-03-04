@@ -205,7 +205,7 @@ export class AuthService {
       this.mailService.sendRequestAccountDelete(email);
     } catch (error) {
       Logger.error(error);
-      throw new BadRequestException(error);
+      throw new BadRequestException("Le compte n'a pas pu être supprimé");
     }
   }
 
