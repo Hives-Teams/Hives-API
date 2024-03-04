@@ -149,7 +149,7 @@ describe('TutoService', () => {
 
       prisma.tuto.delete = jest.fn().mockResolvedValue({ id: 1 });
 
-      expect(await service.deleteTuto(1, 1)).toStrictEqual({ id: 1 });
+      expect(await service.deleteTuto(1, 1)).toStrictEqual(undefined);
     });
 
     it('should throw an error if user is incorrect', async () => {
