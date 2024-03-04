@@ -21,8 +21,8 @@ ENV NODE_ENV=production
 COPY --from=build /build/package.json /app
 COPY --from=build /build/package-lock.json /app
 COPY --from=build /build/dist /app/dist
-COPY --from=build /build/prisma /app/prisma
-RUN npm ci
+COPY --from=build /build/prisma/ /app/prisma/
+COPY --from=build /build/node_modules /app/node_modules
 USER node
 EXPOSE 3000
 CMD [ "npm", "run", "start:prod:migration" ]
