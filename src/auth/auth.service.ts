@@ -18,7 +18,6 @@ import { MailService } from 'src/mail/mail.service';
 import { ActivationCodeDTO } from './dto/activation-code.dto';
 import { IdUserDTO } from './dto/id-user.dto';
 import { createHash } from 'crypto';
-import { NotificationDTO } from './dto/notification.dto';
 
 @Injectable()
 export class AuthService {
@@ -39,7 +38,7 @@ export class AuthService {
 
     const newUser = await this.prisma.user.create({
       data: {
-        email: user.email,
+        email: user.email.toLowerCase(),
         firstName:
           user.firstname.charAt(0).toUpperCase() +
           user.firstname.slice(1).toLowerCase(),
@@ -206,31 +205,6 @@ export class AuthService {
       this.mailService.sendRequestAccountDelete(email);
     } catch (error) {
       Logger.error(error);
-      throw new BadRequestException(error);
-    }
-  }
-
-  async setTokenNotification(
-    idUser: number,
-    notif: NotificationDTO,
-  ): Promise<void> {
-    try {
-      await this.prisma.refreshTokenUser.updateMany({
-        data: {
-          Notification: notif.token,
-        },
-        where: {
-          AND: [
-            {
-              idUser: idUser,
-            },
-            {
-              idDevice: notif.idDevice,
-            },
-          ],
-        },
-      });
-    } catch (error) {
       throw new BadRequestException(error);
     }
   }

@@ -30,7 +30,6 @@ import { EmailDTO } from './dto/email.dto';
 import { ChangeForgotPasswordDTO } from './dto/change-forgot-password.dto';
 import { DeviceDTO } from './dto/device.dto';
 import { v4 as uuidv4 } from 'uuid';
-import { NotificationDTO } from './dto/notification.dto';
 
 @ApiTags('auth')
 @ApiBearerAuth()
@@ -141,19 +140,6 @@ export class AuthController {
     @Req() req: { user: TokenPayloadInterface },
   ): Promise<void> {
     return await this.authService.deleteAccount(req.user.email, req.user.sub);
-  }
-
-  @UseGuards(JwtGuard)
-  @ApiOperation({
-    summary:
-      'Permet de stocker les tokens unique à chaque appareil pour gérer les notifications',
-  })
-  @Post('notification')
-  async setTokenNotification(
-    @Req() req: { user: TokenPayloadInterface },
-    @Body() user: NotificationDTO,
-  ): Promise<void> {
-    return await this.authService.setTokenNotification(req.user.sub, user);
   }
 
   @ApiOperation({

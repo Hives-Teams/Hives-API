@@ -39,6 +39,9 @@ describe('BoardController', () => {
         {
           id: 1,
           name: 'test',
+          boardImage: {
+            name: 'test',
+          },
         },
       ];
 
@@ -51,12 +54,11 @@ describe('BoardController', () => {
   describe('getModelBoard', () => {
     it('should return an array of board model', async () => {
       const result: string[] = ['test'];
-
       jest
         .spyOn(service, 'getBoardModel')
         .mockImplementation(async () => result);
 
-      expect(await controller.getModelBoard()).toBe(result);
+      expect(await controller.getModelBoard(req)).toBe(result);
     });
   });
 
@@ -66,7 +68,9 @@ describe('BoardController', () => {
 
       jest.spyOn(service, 'setBoard').mockImplementation(async () => result);
 
-      expect(await controller.setBoard(req, { name: 'test' })).toBe(result);
+      expect(
+        await controller.setBoard(req, { name: 'test', image: 'test' }),
+      ).toBe(result);
     });
 
     it('should throw an error if name is not in board model', async () => {
@@ -74,9 +78,9 @@ describe('BoardController', () => {
         throw new Error('Nom de board incorrect');
       });
 
-      await expect(controller.setBoard(req, { name: 'test' })).rejects.toThrow(
-        'Nom de board incorrect',
-      );
+      await expect(
+        controller.setBoard(req, { name: 'test', image: 'test' }),
+      ).rejects.toThrow('Nom de board incorrect');
     });
   });
 
