@@ -138,15 +138,15 @@ describe('AuthService', () => {
         idDevice: '',
       };
       jest.spyOn(service, 'activation').mockImplementation(async () => result);
-
+      prisma.$transaction = jest.fn().mockResolvedValue(null);
       expect(await service.activation(params)).toBe(result);
     });
 
     it('should throw an error if code is incorrect', async () => {
-      prisma.user.findUnique = jest.fn().mockResolvedValue({
-        id: 1,
-        codeActivate: 1,
-      });
+      prisma.user.findFirst = jest.fn().mockResolvedValue(null);
+
+      prisma.user.update = jest.fn().mockResolvedValue({});
+      prisma.$transaction = jest.fn().mockResolvedValue(null);
 
       await expect(
         service.activation({
@@ -191,7 +191,7 @@ describe('AuthService', () => {
     });
 
     it('should throw an error if code is incorrect', async () => {
-      prisma.user.findUnique = jest.fn().mockResolvedValue(null);
+      prisma.forgotPassword.findFirst = jest.fn().mockResolvedValue(null);
 
       await expect(service.changeForgotPassword(pwd)).rejects.toThrow(
         'Code incorrect',
@@ -217,28 +217,26 @@ describe('AuthService', () => {
     });
 
     it('should throw an error if user is incorrect', async () => {
-      prisma.user.findUnique = jest.fn().mockResolvedValue(null);
+      prisma.refreshTokenUser.findFirst = jest.fn().mockResolvedValue(null);
 
       await expect(service.refreshToken(payload, uuidv4())).rejects.toThrow(
-        'pas token',
-      );
-    });
-
-    it('should throw an error if device is incorrect', async () => {
-      prisma.user.findUnique = jest.fn().mockResolvedValue({ id: 1 });
-
-      await expect(service.refreshToken(payload, '')).rejects.toThrow(
         'pas token',
       );
     });
 
     it('should throw an error if refreshtoken is incorrect', async () => {
-      prisma.user.findUnique = jest
+      prisma.refreshTokenUser.findFirst = jest
         .fn()
-        .mockResolvedValue({ id: 1, refresh_token: 'test' });
+        .mockResolvedValue({ id: 1, refreshToken: 'jeifzoi', idDevice: '' });
 
-      await expect(service.refreshToken(payload, uuidv4())).rejects.toThrow(
-        'pas token',
+      const pay: TokenPayloadInterface = {
+        sub: 0,
+        email: '',
+        refreshToken: 'jeifzoi',
+      };
+
+      await expect(service.refreshToken(pay, uuidv4())).rejects.toThrow(
+        'not match',
       );
     });
   });
@@ -251,7 +249,9 @@ describe('AuthService', () => {
     });
 
     it('should throw an error if user is incorrect', async () => {
-      prisma.user.findUnique = jest.fn().mockResolvedValue(null);
+      prisma.refreshTokenUser.delete = jest
+        .fn()
+        .mockRejectedValue({ code: 'P2025' });
 
       await expect(service.disconnect(0, '')).rejects.toThrow(
         "Cette appareil n'appartient pas à cette utilisateur",
