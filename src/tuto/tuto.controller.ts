@@ -32,15 +32,6 @@ export class TutoController {
   constructor(private readonly tutoService: TutoService) {}
 
   @ApiOperation({
-    summary:
-      'prend 15min à charger (du à la gestion des erreurs des notifications)',
-  })
-  @Get('Test_Notification')
-  async testNotification() {
-    return await this.tutoService.reminderNotifications();
-  }
-
-  @ApiOperation({
     summary: 'Affiche les réseaux sociaux des tutos enregistrée dans un board',
   })
   @ApiOkResponse({

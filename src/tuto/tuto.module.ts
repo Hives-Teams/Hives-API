@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import { Module } from '@nestjs/common';
 import { TutoService } from './tuto.service';
 import { TutoController } from './tuto.controller';

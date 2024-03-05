@@ -40,7 +40,7 @@ describe('BoardService', () => {
         .fn()
         .mockResolvedValue([{ name: 'test' }]);
 
-      expect(await service.getBoardModel()).toStrictEqual(['test']);
+      expect(await service.getBoardModel(1)).toStrictEqual(['test']);
     });
   });
 
@@ -52,7 +52,7 @@ describe('BoardService', () => {
 
       prisma.board.create = jest.fn().mockResolvedValue({ id: 1 });
 
-      expect(await service.setBoard(1, 'test')).toBe(1);
+      expect(await service.setBoard(1, 'test', 'test')).toBe(1);
     });
 
     it('should throw an error if board name is incorrect', async () => {
@@ -60,8 +60,8 @@ describe('BoardService', () => {
         .fn()
         .mockResolvedValue([{ name: 'test' }]);
 
-      await expect(service.setBoard(1, 'test2')).rejects.toThrow(
-        'Nom de board incorrect',
+      await expect(service.setBoard(1, 'test2', 'test2')).rejects.toThrow(
+        'Nom du Hives incorrect',
       );
     });
   });

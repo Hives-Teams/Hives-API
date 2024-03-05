@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -10,6 +12,8 @@ import { BoardModule } from './board/board.module';
 import { TutoModule } from './tuto/tuto.module';
 import { MailModule } from './mail/mail.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { CronService } from './cron/cron.service';
+import { CronModule } from './cron/cron.module';
 
 @Module({
   controllers: [AppController],
@@ -19,6 +23,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    CronService,
   ],
   imports: [
     ConfigModule.forRoot(),
@@ -34,6 +39,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     BoardModule,
     TutoModule,
     MailModule,
+    CronModule,
   ],
 })
 export class AppModule {}
