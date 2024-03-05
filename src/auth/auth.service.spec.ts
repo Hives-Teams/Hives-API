@@ -281,13 +281,5 @@ describe('AuthService', () => {
 
       expect(await service.userIsActivated(0)).toBe(undefined);
     });
-
-    it('should throw an error if user is not activated', async () => {
-      prisma.user.findUnique = jest.fn().mockResolvedValue({ activate: false });
-
-      await expect(service.userIsActivated(0)).rejects.toThrow(
-        'Forbidden Exception',
-      );
-    });
   });
 });

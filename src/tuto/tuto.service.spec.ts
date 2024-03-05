@@ -254,4 +254,57 @@ describe('TutoService', () => {
       expect(service.isValidUrl('test')).toStrictEqual(false);
     });
   });
+
+  describe('setTutos', () => {
+    it('should return undefined', async () => {
+      jest
+        .spyOn(service, 'boardBelongtoUser')
+        .mockImplementation(
+          async () => await new Promise((resolve) => resolve()),
+        );
+
+      prisma.tuto.create = jest.fn().mockResolvedValue({
+        id: 1,
+        title: 'test',
+        URL: 'test',
+        idBoard: 1,
+        SocialNetworks: {
+          name: 'test',
+        },
+      });
+
+      expect(
+        await service.setTutos(1, {
+          url: 'https://www.instagram.com/reel/CxlXglmLzWr/?igsh=MXNob3hvYzFneW52ZA==',
+          board: [],
+        }),
+      ).toStrictEqual(undefined);
+    });
+
+    it('should throw an error if tuto is not a url', async () => {
+      jest.spyOn(service, 'boardBelongtoUser').mockImplementation(() => {
+        throw new Error('Pas une URL');
+      });
+
+      await expect(
+        service.setTutos(2, {
+          url: '',
+          board: [],
+        }),
+      ).rejects.toThrow('Pas une URL');
+    });
+  });
+
+  it('should throw an error if social network is not compatible', async () => {
+    jest.spyOn(service, 'boardBelongtoUser').mockImplementation(() => {
+      throw new Error('Réseau social non compatible');
+    });
+
+    await expect(
+      service.setTutos(2, {
+        url: 'https://www.google.com',
+        board: [],
+      }),
+    ).rejects.toThrow('Réseau social non compatible');
+  });
 });
