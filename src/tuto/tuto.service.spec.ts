@@ -141,6 +141,8 @@ describe('TutoService', () => {
 
   describe('deleteTuto', () => {
     it('should return an array of string', async () => {
+      prisma.tuto.findFirst = jest.fn().mockResolvedValue({ idBoard: 1 });
+
       jest
         .spyOn(service, 'boardBelongtoUser')
         .mockImplementation(
@@ -153,6 +155,8 @@ describe('TutoService', () => {
     });
 
     it('should throw an error if user is incorrect', async () => {
+      prisma.tuto.findFirst = jest.fn().mockResolvedValue({ idBoard: 1 });
+
       jest.spyOn(service, 'boardBelongtoUser').mockImplementation(() => {
         throw new Error('Ce board ne vous appartient pas');
       });
@@ -164,7 +168,8 @@ describe('TutoService', () => {
   });
 
   describe('deleteTutos', () => {
-    it('should return an array of string', async () => {
+    it('should delete tutos', async () => {
+      prisma.tuto.findFirst = jest.fn().mockResolvedValue({ idBoard: 1 });
       jest
         .spyOn(service, 'boardBelongtoUser')
         .mockImplementation(
@@ -177,6 +182,7 @@ describe('TutoService', () => {
     });
 
     it('should throw an error if user is incorrect', async () => {
+      prisma.tuto.findFirst = jest.fn().mockResolvedValue({ idBoard: 1 });
       jest.spyOn(service, 'boardBelongtoUser').mockImplementation(() => {
         throw new Error('Ce board ne vous appartient pas');
       });
@@ -257,13 +263,19 @@ describe('TutoService', () => {
 
   describe('setTutos', () => {
     it('should return undefined', async () => {
+      prisma.board.findMany = jest.fn().mockResolvedValue([]);
+      prisma.socialNetwork.findMany = jest.fn().mockResolvedValue([
+        {
+          name: 'instagram',
+        },
+      ]);
       jest
         .spyOn(service, 'boardBelongtoUser')
         .mockImplementation(
           async () => await new Promise((resolve) => resolve()),
         );
 
-      prisma.tuto.create = jest.fn().mockResolvedValue({
+      prisma.tuto.createMany = jest.fn().mockResolvedValue({
         id: 1,
         title: 'test',
         URL: 'test',
@@ -282,6 +294,18 @@ describe('TutoService', () => {
     });
 
     it('should throw an error if tuto is not a url', async () => {
+      prisma.board.findMany = jest.fn().mockResolvedValue([]);
+      prisma.socialNetwork.findMany = jest.fn().mockResolvedValue([
+        {
+          name: 'instagram',
+        },
+      ]);
+      jest.spyOn(service, 'listSocial').mockImplementation(async () => [
+        {
+          id: 1,
+          name: 'instagram',
+        },
+      ]);
       jest.spyOn(service, 'boardBelongtoUser').mockImplementation(() => {
         throw new Error('Pas une URL');
       });
@@ -293,18 +317,28 @@ describe('TutoService', () => {
         }),
       ).rejects.toThrow('Pas une URL');
     });
-  });
-
-  it('should throw an error if social network is not compatible', async () => {
-    jest.spyOn(service, 'boardBelongtoUser').mockImplementation(() => {
-      throw new Error('Réseau social non compatible');
+    it('should throw an error if social network is not compatible', async () => {
+      prisma.board.findMany = jest.fn().mockResolvedValue([]);
+      prisma.socialNetwork.findMany = jest.fn().mockResolvedValue([
+        {
+          name: 'instagram',
+        },
+      ]);
+      jest.spyOn(service, 'listSocial').mockImplementation(async () => [
+        {
+          id: 1,
+          name: 'instagram',
+        },
+      ]);
+      jest.spyOn(service, 'boardBelongtoUser').mockImplementation(() => {
+        throw new Error('Réseau social non compatible');
+      });
+      await expect(
+        service.setTutos(2, {
+          url: 'https://www.google.com',
+          board: [],
+        }),
+      ).rejects.toThrow('Réseau social non compatible');
     });
-
-    await expect(
-      service.setTutos(2, {
-        url: 'https://www.google.com',
-        board: [],
-      }),
-    ).rejects.toThrow('Réseau social non compatible');
   });
 });
