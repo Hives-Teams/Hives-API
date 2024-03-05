@@ -18,6 +18,16 @@ services:
       - 9229:9229
     tty: true
 
+  test:
+    container_name: hives-test
+    image: hives-backend:test
+    build:
+      context: .
+      target: test
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./coverage:/test/coverage
+
   prod:
     networks:
       - hives-network

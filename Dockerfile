@@ -26,3 +26,9 @@ COPY --from=build /build/node_modules /app/node_modules
 USER node
 EXPOSE 3000
 CMD [ "npm", "run", "start:prod:migration" ]
+
+FROM node:20-alpine as test
+WORKDIR /test
+COPY . .
+RUN npm ci
+CMD [ "npm", "run", "test:cov" ]
