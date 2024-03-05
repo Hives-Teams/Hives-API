@@ -36,6 +36,7 @@ describe('BoardService', () => {
 
   describe('getBoardModel', () => {
     it('should return an array of board model', async () => {
+      prisma.board.findMany = jest.fn().mockResolvedValue([{ name: 'test' }]);
       prisma.boardModel.findMany = jest
         .fn()
         .mockResolvedValue([{ name: 'test' }]);
@@ -46,6 +47,7 @@ describe('BoardService', () => {
 
   describe('setBoard', () => {
     it('should create a board and return an id of board', async () => {
+      prisma.board.findMany = jest.fn().mockResolvedValue([{ name: 'test2' }]);
       prisma.boardModel.findMany = jest
         .fn()
         .mockResolvedValue([{ name: 'test' }]);
