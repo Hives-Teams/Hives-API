@@ -1,0 +1,19 @@
+name: develop
+
+on: [pull_request]
+  
+jobs:        
+    
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Copy repository
+      uses: actions/checkout@v3
+    - name: Run test coverage
+      run: docker compose --build test
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4.0.1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        slug: Hives-Teams/Hives-API
