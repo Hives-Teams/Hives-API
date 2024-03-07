@@ -11,7 +11,7 @@ jobs:
     - name: Copy repository
       uses: actions/checkout@v3
     - name: Run test coverage
-      run: docker compose --build test
+      run: docker compose up --build test
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4.0.1
       with:
