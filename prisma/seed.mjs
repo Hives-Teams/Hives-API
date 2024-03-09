@@ -15,6 +15,10 @@ async function main() {
         id: 3,
         name: 'linkedin',
       },
+      {
+        id: 4,
+        name: 'youtube',
+      },
     ],
     skipDuplicates: true,
   });
