@@ -137,20 +137,13 @@ export class TutoService {
         createTuto.url = createTuto.url.replace(/^(https:)(\/)/, '$1/$2');
     }
 
-    const data: {
-      URL: string;
-      idSocial: number;
-      idBoard: number;
-    }[] = [];
-
-    for (const b of createTuto.board) {
-      const tuto = {
+    const data = createTuto.board.map((b) => {
+      return {
         URL: createTuto.url,
         idSocial: socialCompatibility.id,
         idBoard: b,
       };
-      data.push(tuto);
-    }
+    });
 
     await this.prisma.tuto.createMany({
       data: data,
