@@ -56,6 +56,10 @@ services:
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls.certresolver=myresolver"
       - "traefik.http.services.api.loadbalancer.server.port=3000"
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"  
       
   db:
     image: mariadb:lts
