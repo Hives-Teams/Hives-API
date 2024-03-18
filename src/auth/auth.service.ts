@@ -56,8 +56,15 @@ export class AuthService {
         id: newUser.id,
       };
     } catch (error) {
+      this.prisma.user.delete({
+        where: {
+          id: newUser.id,
+        },
+      });
       Logger.error(error);
-      throw new BadRequestException(error);
+      throw new BadRequestException(
+        "Erreur lors de l'envoie du mail, votre compte n'a pas pu être créé",
+      );
     }
   }
 
@@ -129,7 +136,11 @@ export class AuthService {
 
     if (!userResult) throw new ForbiddenException("Ce compte n'existe pas");
 
-    if (!userResult.activate) throw new ForbiddenException(userResult.id);
+    if (!userResult.activate)
+      throw new ForbiddenException({
+        message: 'account_not_activated',
+        id: userResult.id,
+      });
 
     const compare = await bcrypt.compare(user.password, userResult.password);
 
