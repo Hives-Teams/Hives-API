@@ -30,6 +30,7 @@ import { EmailDTO } from './dto/email.dto';
 import { ChangeForgotPasswordDTO } from './dto/change-forgot-password.dto';
 import { DeviceDTO } from './dto/device.dto';
 import { v4 as uuidv4 } from 'uuid';
+import { GoogleIdDTO } from './dto/google-id.dto';
 
 @ApiTags('auth')
 @ApiBearerAuth()
@@ -61,6 +62,27 @@ export class AuthController {
   @Post('register')
   async register(@Body() user: CreateUserDTO): Promise<IdUserDTO> {
     return await this.authService.register(user);
+  }
+  @ApiOperation({
+    summary: "Création d'un nouveau compte avec Google",
+  })
+  @ApiCreatedResponse({
+    type: TokenDTO,
+  })
+  @ApiBody({
+    type: GoogleIdDTO,
+    examples: {
+      inscription: {
+        value: {
+          id: 'string',
+          idDevice: uuidv4(),
+        },
+      },
+    },
+  })
+  @Post('register/google')
+  async registerGoogle(@Body() user: GoogleIdDTO): Promise<TokenDTO> {
+    return await this.authService.registerGoogle(user.id, user.idDevice);
   }
 
   @ApiOperation({

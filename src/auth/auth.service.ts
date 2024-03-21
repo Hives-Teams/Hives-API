@@ -18,6 +18,7 @@ import { MailService } from 'src/mail/mail.service';
 import { ActivationCodeDTO } from './dto/activation-code.dto';
 import { IdUserDTO } from './dto/id-user.dto';
 import { createHash } from 'crypto';
+import { OAuth2Client } from 'google-auth-library';
 
 @Injectable()
 export class AuthService {
@@ -66,6 +67,78 @@ export class AuthService {
         "Erreur lors de l'envoie du mail, votre compte n'a pas pu être créé",
       );
     }
+  }
+
+  async registerGoogle(user: string, idDevice: string): Promise<TokenDTO> {
+    const client = new OAuth2Client();
+    const ticket = await client
+      .verifyIdToken({
+        idToken: user,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      })
+      .catch((error) => {
+        Logger.error(error, 'registerGoogle_verifyIdToken');
+        throw new UnauthorizedException(
+          'Erreur lors de la vérification du compte Google',
+        );
+      });
+
+    const payload = ticket.getPayload();
+
+    if (!payload.email_verified)
+      throw new ForbiddenException("Ce compte Google n'est pas activé");
+
+    const userExist = await this.userExist(payload.email);
+
+    if (userExist)
+      throw new ConflictException('Cet email est déjà associé à un compte');
+
+    const newUser = await this.prisma.user.create({
+      data: {
+        email: payload.email,
+        firstName: payload.given_name,
+        lastName: payload.family_name,
+        activate: true,
+        SocialAccount: {
+          create: {
+            provider: 'google',
+            providerId: payload.sub,
+          },
+        },
+      },
+    });
+
+    await this.mailService.sendConfirmationMailSignIn(payload.email);
+
+    const jwt_payload: TokenPayloadInterface = {
+      sub: newUser.id,
+      email: newUser.email,
+    };
+
+    const jwt = await this.generateToken(jwt_payload);
+
+    let refreshToken = createHash('sha256')
+      .update(jwt.refresh_token)
+      .digest('hex');
+
+    refreshToken = await this.hash(refreshToken);
+
+    this.prisma.refreshTokenUser.upsert({
+      where: {
+        idDevice: idDevice,
+      },
+      create: {
+        idDevice: idDevice,
+        refreshToken: refreshToken,
+        idUser: newUser.id,
+      },
+      update: {
+        refreshToken: refreshToken,
+        idUser: newUser.id,
+      },
+    });
+
+    return jwt;
   }
 
   async activation(code: ActivationCodeDTO): Promise<TokenDTO> {
@@ -141,6 +214,9 @@ export class AuthService {
         message: 'account_not_activated',
         id: userResult.id,
       });
+
+    if (userResult.password == undefined)
+      throw new ForbiddenException('Mot de passe incorrect');
 
     const compare = await bcrypt.compare(user.password, userResult.password);
 
