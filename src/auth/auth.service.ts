@@ -253,6 +253,88 @@ export class AuthService {
     return jwt;
   }
 
+  async loginGoogle(id: string, device: string): Promise<TokenDTO> {
+    const client = new OAuth2Client();
+    const ticket = await client
+      .verifyIdToken({
+        idToken: id,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      })
+      .catch((error) => {
+        Logger.error(error, 'registerGoogle_loginGoogle');
+        throw new UnauthorizedException(
+          'Erreur lors de la vérification du compte Google',
+        );
+      });
+
+    const payload = ticket.getPayload();
+
+    if (!payload.email_verified)
+      throw new ForbiddenException("Ce compte Google n'est pas activé");
+
+    const subGoogle = await this.prisma.socialAccount.findFirst({
+      where: {
+        providerId: payload.sub,
+      },
+    });
+
+    const userExist = await this.prisma.user.findUnique({
+      where: {
+        email: payload.email,
+      },
+    });
+
+    if (
+      !subGoogle ||
+      subGoogle.provider != 'google' ||
+      subGoogle.providerId != payload.sub
+    ) {
+      if (userExist) {
+        await this.prisma.socialAccount.create({
+          data: {
+            provider: 'google',
+            providerId: payload.sub,
+            userId: userExist.id,
+          },
+        });
+      } else {
+        throw new ForbiddenException(
+          "Ce compte Google n'est pas associé à un compte",
+        );
+      }
+    }
+
+    const payload_jwt: TokenPayloadInterface = {
+      sub: userExist.id,
+      email: userExist.email,
+    };
+
+    const jwt = await this.generateToken(payload_jwt);
+
+    let refreshToken = createHash('sha256')
+      .update(jwt.refresh_token)
+      .digest('hex');
+
+    refreshToken = await this.hash(refreshToken);
+
+    await this.prisma.refreshTokenUser.upsert({
+      where: {
+        idDevice: device,
+      },
+      create: {
+        idDevice: device,
+        refreshToken: refreshToken,
+        idUser: userExist.id,
+      },
+      update: {
+        refreshToken: refreshToken,
+        idUser: userExist.id,
+      },
+    });
+
+    return jwt;
+  }
+
   async disconnect(id: number, idDevice: string): Promise<void> {
     try {
       await this.prisma.refreshTokenUser.delete({

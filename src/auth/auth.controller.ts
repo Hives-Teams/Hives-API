@@ -135,6 +135,29 @@ export class AuthController {
   }
 
   @ApiOperation({
+    summary: 'Connexion à un compte via Google',
+  })
+  @ApiOkResponse({
+    type: TokenDTO,
+  })
+  @ApiBody({
+    type: GoogleIdDTO,
+    examples: {
+      inscription: {
+        value: {
+          id: 'string',
+          idDevice: uuidv4(),
+        },
+      },
+    },
+  })
+  @HttpCode(HttpStatus.OK)
+  @Post('login/google')
+  async loginGoogle(@Body() user: GoogleIdDTO): Promise<TokenDTO> {
+    return await this.authService.loginGoogle(user.id, user.idDevice);
+  }
+
+  @ApiOperation({
     summary: "Deconnecte l'appareil de l'app",
   })
   @ApiBody({
