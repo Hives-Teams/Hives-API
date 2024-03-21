@@ -21,13 +21,22 @@ model User {
   email            String             @unique
   lastName         String
   firstName        String
-  password         String
+  password         String?
   activate         Boolean            @default(false)
   codeActivate     Int?
+  SocialAccount    SocialAccount[]
   Board            Board[]
   RefreshTokenUser RefreshTokenUser[]
   ForgotPassword   ForgotPassword[]
   createdAt        DateTime           @default(now())
+}
+
+model SocialAccount {
+  id         Int    @id @default(autoincrement())
+  provider   String
+  providerId String @unique
+  User       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int
 }
 
 model ForgotPassword {

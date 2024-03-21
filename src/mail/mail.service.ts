@@ -60,6 +60,18 @@ export class MailService {
     });
   }
 
+  async sendConfirmationMailSignIn(email: string): Promise<void> {
+    await this.getTransport();
+
+    await this.mailerService.sendMail({
+      transporterName: 'gmail',
+      from: process.env.EMAIL,
+      to: email,
+      subject: 'Bienvenue dans la ruche Hives ! 🐝',
+      template: 'email-confirmation-signin.hbs',
+    });
+  }
+
   async sendForgotPasswordMail(email: string, code: number): Promise<void> {
     await this.getTransport();
 
@@ -79,6 +91,7 @@ export class MailService {
     await this.getTransport();
 
     await this.mailerService.sendMail({
+      transporterName: 'gmail',
       from: process.env.EMAIL,
       to: email,
       subject: 'Suppression de votre compte Hives',
