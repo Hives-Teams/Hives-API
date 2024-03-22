@@ -20,7 +20,22 @@ async function bootstrap() {
     SwaggerModule.setup('swagger', app, document);
   }
 
-  app.enableCors();
+  app.enableCors({
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'http://localhost:3000/',
+        'https://hives-dev-7da4a04fb1e4.herokuapp.com/',
+        'https://api.hivesapp.fr/',
+      ];
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type, Accept',
+  });
   app.use(helmet());
 
   await app.listen(process.env.PORT);
