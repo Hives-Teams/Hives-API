@@ -31,6 +31,7 @@ import { ChangeForgotPasswordDTO } from './dto/change-forgot-password.dto';
 import { DeviceDTO } from './dto/device.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { GoogleIdDTO } from './dto/google-id.dto';
+import { AppleIdDTO } from './dto/apple-id.dto';
 
 @ApiTags('auth')
 @ApiBearerAuth()
@@ -63,6 +64,21 @@ export class AuthController {
   async register(@Body() user: CreateUserDTO): Promise<IdUserDTO> {
     return await this.authService.register(user);
   }
+
+  @ApiOperation({
+    summary: "Création d'un nouveau compte avec Apple",
+  })
+  @ApiCreatedResponse({
+    type: TokenDTO,
+  })
+  @ApiBody({
+    type: AppleIdDTO,
+  })
+  @Post('register/apple')
+  async registerApple(@Body() user: AppleIdDTO): Promise<TokenDTO> {
+    return await this.authService.registerApple(user);
+  }
+
   @ApiOperation({
     summary: "Création d'un nouveau compte avec Google",
   })

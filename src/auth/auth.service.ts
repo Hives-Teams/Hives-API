@@ -19,6 +19,8 @@ import { ActivationCodeDTO } from './dto/activation-code.dto';
 import { IdUserDTO } from './dto/id-user.dto';
 import { createHash } from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
+import appleSignin from 'apple-signin-auth';
+import { AppleIdDTO } from './dto/apple-id.dto';
 
 @Injectable()
 export class AuthService {
@@ -67,6 +69,71 @@ export class AuthService {
         "Erreur lors de l'envoie du mail, votre compte n'a pas pu être créé",
       );
     }
+  }
+
+  async registerApple(user: AppleIdDTO): Promise<TokenDTO> {
+    const payload = await appleSignin.verifyIdToken(user.id, {
+      audience: 'com.miel.hives',
+      nonce: user.nonce
+        ? createHash('sha256').update(user.nonce).digest('hex')
+        : undefined,
+      ignoreExpiration: true,
+    });
+
+    if (!payload.email_verified)
+      throw new ForbiddenException("Ce compte Apple n'est pas activé");
+
+    const userExist = await this.userExist(payload.email);
+
+    if (userExist)
+      throw new ConflictException('Cet email est déjà associé à un compte');
+
+    const newUser = await this.prisma.user.create({
+      data: {
+        email: payload.email,
+        firstName: user.firstname,
+        lastName: user.lastname,
+        activate: true,
+        SocialAccount: {
+          create: {
+            provider: 'apple',
+            providerId: payload.sub,
+          },
+        },
+      },
+    });
+
+    await this.mailService.sendConfirmationMailSignIn(payload.email);
+
+    const jwt_payload: TokenPayloadInterface = {
+      sub: newUser.id,
+      email: newUser.email,
+    };
+
+    const jwt = await this.generateToken(jwt_payload);
+
+    let refreshToken = createHash('sha256')
+      .update(jwt.refresh_token)
+      .digest('hex');
+
+    refreshToken = await this.hash(refreshToken);
+
+    this.prisma.refreshTokenUser.upsert({
+      where: {
+        idDevice: user.idDevice,
+      },
+      create: {
+        idDevice: user.idDevice,
+        refreshToken: refreshToken,
+        idUser: newUser.id,
+      },
+      update: {
+        refreshToken: refreshToken,
+        idUser: newUser.id,
+      },
+    });
+
+    return jwt;
   }
 
   async registerGoogle(user: string, idDevice: string): Promise<TokenDTO> {
