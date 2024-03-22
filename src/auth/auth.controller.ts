@@ -32,6 +32,7 @@ import { DeviceDTO } from './dto/device.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { GoogleIdDTO } from './dto/google-id.dto';
 import { AppleIdDTO } from './dto/apple-id.dto';
+import { ConnectAppleIdDTO } from './dto/connect-apple-id.dto';
 
 @ApiTags('auth')
 @ApiBearerAuth()
@@ -73,6 +74,17 @@ export class AuthController {
   })
   @ApiBody({
     type: AppleIdDTO,
+    examples: {
+      inscription: {
+        value: {
+          id: 'string',
+          firstname: 'john',
+          lastname: 'doe',
+          nonce: 'string',
+          idDevice: uuidv4(),
+        },
+      },
+    },
   })
   @Post('register/apple')
   async registerApple(@Body() user: AppleIdDTO): Promise<TokenDTO> {
@@ -171,6 +183,30 @@ export class AuthController {
   @Post('login/google')
   async loginGoogle(@Body() user: GoogleIdDTO): Promise<TokenDTO> {
     return await this.authService.loginGoogle(user.id, user.idDevice);
+  }
+
+  @ApiOperation({
+    summary: 'Connexion à un compte via Apple',
+  })
+  @ApiOkResponse({
+    type: TokenDTO,
+  })
+  @ApiBody({
+    type: ConnectAppleIdDTO,
+    examples: {
+      inscription: {
+        value: {
+          id: 'string',
+          nonce: 'string',
+          idDevice: uuidv4(),
+        },
+      },
+    },
+  })
+  @HttpCode(HttpStatus.OK)
+  @Post('login/apple')
+  async loginApple(@Body() user: ConnectAppleIdDTO): Promise<TokenDTO> {
+    return await this.authService.loginApple(user);
   }
 
   @ApiOperation({
