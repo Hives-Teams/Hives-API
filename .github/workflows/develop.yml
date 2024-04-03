@@ -3,7 +3,7 @@ name: develop
 on:
   push:
     branches:
-    - feature/separation_migration
+    - develop
   
 jobs:        
     
