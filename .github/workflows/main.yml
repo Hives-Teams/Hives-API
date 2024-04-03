@@ -46,4 +46,8 @@ jobs:
         username: ${{ secrets.USER }}
         key: ${{ secrets.KEY }}
         port: ${{ secrets.PORT }}
-        script: sudo docker compose -f api/docker-compose.yml up --build -d prod
+        script: |
+          sudo docker compose -f api/docker-compose.yml up --build migration
+          sudo docker rm hives-migration
+          sudo docker image rm hives-backend:migration
+          sudo docker compose -f api/docker-compose.yml up --build -d prod

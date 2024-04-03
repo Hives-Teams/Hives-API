@@ -13,6 +13,17 @@ jobs:
     steps:
     - name: Copy repository
       uses: actions/checkout@v4
+
+    - name: 'Create env file'
+      run: |
+        touch .env
+        echo DATABASE_URL=${{ secrets.DATABASE_DEV }} > .env
+
+    - name: 'Run migration'
+      run: |
+        docker build -t hivesapi:migration --target migration .
+        docker run --env-file .env hivesapi:migration
+
     - uses: gonuit/heroku-docker-deploy@v1.3.3
       with:
         email: ${{ secrets.HEROKU_EMAIL }}

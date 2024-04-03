@@ -21,19 +21,12 @@ async function bootstrap() {
   }
 
   app.enableCors({
-    origin: (origin, callback) => {
-      const allowedOrigins = [
-        'http://localhost:3000/',
-        'https://hives-dev-7da4a04fb1e4.herokuapp.com/',
-        'https://api.hivesapp.fr/',
-      ];
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    origin: [
+      'http://localhost:3000/',
+      'https://hives-dev-7da4a04fb1e4.herokuapp.com/',
+      'https://api.hivesapp.fr/',
+    ],
+    methods: 'GET,HEAD,POST,DELETE',
     allowedHeaders: 'Content-Type, Accept',
   });
   app.use(helmet());
