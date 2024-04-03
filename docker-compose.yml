@@ -57,12 +57,25 @@ services:
       - 'traefik.http.routers.api.entrypoints=websecure'
       - 'traefik.http.routers.api.tls.certresolver=myresolver'
       - 'traefik.http.services.api.loadbalancer.server.port=3000'
-    ports:
-      - 3000:3000
     logging:
       options:
         max-size: '10m'
         max-file: '3'
+
+  migration:
+    container_name: hives-migration
+    image: hives-backend:migration
+    build:
+      context: .
+      target: migration
+      dockerfile: ./Dockerfile
+    networks:
+      - db
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
 
   db:
     image: mariadb:lts
