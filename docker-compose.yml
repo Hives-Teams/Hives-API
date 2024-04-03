@@ -1,4 +1,4 @@
-version: "3.9"
+version: '3'
 services:
   dev:
     container_name: hives-backend-dev
@@ -33,7 +33,8 @@ services:
       - hives-network
       - traefik-network
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     container_name: hives-backend
     image: hives-backend:prod
     build:
@@ -48,19 +49,21 @@ services:
       - EMAIL=${EMAIL}
       - CLIENT_ID_MAIL=${CLIENT_ID_MAIL}
       - CLIENT_SECRET_MAIL=${CLIENT_SECRET_MAIL}
-      - REFRESH_TOKEN_MAIL=${REFRESH_TOKEN_MAIL}      
+      - REFRESH_TOKEN_MAIL=${REFRESH_TOKEN_MAIL}
     restart: always
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`api.hivesapp.fr`)"
-      - "traefik.http.routers.api.entrypoints=websecure"
-      - "traefik.http.routers.api.tls.certresolver=myresolver"
-      - "traefik.http.services.api.loadbalancer.server.port=3000"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.api.rule=Host(`api.hivesapp.fr`)'
+      - 'traefik.http.routers.api.entrypoints=websecure'
+      - 'traefik.http.routers.api.tls.certresolver=myresolver'
+      - 'traefik.http.services.api.loadbalancer.server.port=3000'
+    ports:
+      - 3000:3000
     logging:
       options:
-        max-size: "10m"
-        max-file: "3"  
-      
+        max-size: '10m'
+        max-file: '3'
+
   db:
     image: mariadb:lts
     restart: always
@@ -68,10 +71,15 @@ services:
       - hives-network
       - db
     environment:
-    - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
-    - MARIADB_DATABASE=${MARIADB_DATABASE}
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MARIADB_DATABASE=${MARIADB_DATABASE}
     volumes:
       - hives-volumes:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   phpmyadmin:
     depends_on:
@@ -85,7 +93,6 @@ services:
 
 volumes:
   hives-volumes:
-
 
 networks:
   hives-network:
