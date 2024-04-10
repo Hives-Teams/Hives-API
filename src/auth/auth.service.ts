@@ -109,6 +109,8 @@ export class AuthService {
     const jwt_payload: TokenPayloadInterface = {
       sub: newUser.id,
       email: newUser.email,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
     };
 
     const jwt = await this.generateToken(jwt_payload);
@@ -180,6 +182,8 @@ export class AuthService {
 
     const jwt_payload: TokenPayloadInterface = {
       sub: newUser.id,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
       email: newUser.email,
     };
 
@@ -227,6 +231,8 @@ export class AuthService {
 
     const payload: TokenPayloadInterface = {
       sub: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
     };
 
@@ -292,6 +298,8 @@ export class AuthService {
 
     const payload: TokenPayloadInterface = {
       sub: userResult.id,
+      firstName: userResult.firstName,
+      lastName: userResult.lastName,
       email: userResult.email,
     };
 
@@ -367,6 +375,8 @@ export class AuthService {
 
     const payload_jwt: TokenPayloadInterface = {
       sub: userExist.id,
+      firstName: userExist.firstName,
+      lastName: userExist.lastName,
       email: userExist.email,
     };
 
@@ -449,6 +459,8 @@ export class AuthService {
 
     const payload_jwt: TokenPayloadInterface = {
       sub: userExist.id,
+      firstName: userExist.firstName,
+      lastName: userExist.lastName,
       email: userExist.email,
     };
 
@@ -674,6 +686,8 @@ export class AuthService {
   async generateToken(payload: TokenPayloadInterface): Promise<TokenDTO> {
     const newPayloard: TokenPayloadInterface = {
       email: payload.email,
+      firstName: payload.firstName,
+      lastName: payload.lastName,
       sub: payload.sub,
     };
 
