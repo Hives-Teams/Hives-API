@@ -22,6 +22,11 @@ export class BoardService {
             name: true,
           },
         },
+        _count: {
+          select: {
+            Tuto: true,
+          },
+        },
       },
       where: {
         AND: [
