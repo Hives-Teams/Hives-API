@@ -12,4 +12,8 @@ export class BoardDTO {
   name: string;
   @ApiProperty({ type: BoardImage })
   boardImage: BoardImage;
+  @ApiProperty()
+  _count: {
+    Tuto: number;
+  };
 }
