@@ -5,6 +5,11 @@ class BoardImage {
   name: string;
 }
 
+class TutoCount {
+  @ApiProperty()
+  Tuto: number;
+}
+
 export class BoardDTO {
   @ApiProperty()
   id: number;
@@ -12,8 +17,6 @@ export class BoardDTO {
   name: string;
   @ApiProperty({ type: BoardImage })
   boardImage: BoardImage;
-  @ApiProperty()
-  _count: {
-    Tuto: number;
-  };
+  @ApiProperty({ type: TutoCount })
+  _count: TutoCount;
 }
