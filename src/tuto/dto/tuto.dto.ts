@@ -10,6 +10,8 @@ export class TutoDTO {
   id: number;
   @ApiProperty()
   title: string;
+  @ApiProperty()
+  image: string;
   @ApiProperty({ type: SocialNetworks })
   SocialNetworks: SocialNetworks;
   @ApiProperty()
