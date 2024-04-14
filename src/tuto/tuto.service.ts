@@ -31,6 +31,7 @@ export class TutoService {
             name: true,
           },
         },
+        createdAt: true,
       },
       where: {
         idBoard: idBoard,
@@ -60,6 +61,7 @@ export class TutoService {
               name: true,
             },
           },
+          createdAt: true,
         },
         where: {
           AND: [

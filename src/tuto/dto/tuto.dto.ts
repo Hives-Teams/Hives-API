@@ -16,4 +16,6 @@ export class TutoDTO {
   URL: string;
   @ApiProperty()
   idBoard: number;
+  @ApiProperty()
+  createdAt: Date;
 }
