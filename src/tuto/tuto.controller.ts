@@ -12,6 +12,7 @@ import { TutoService } from './tuto.service';
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
@@ -128,6 +129,9 @@ export class TutoController {
   })
   @ApiBody({
     type: SetMetadataDTO,
+  })
+  @ApiCreatedResponse({
+    type: MetadataDTO,
   })
   @Post('metadata')
   async setMetadata(
