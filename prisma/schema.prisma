@@ -83,6 +83,7 @@ model BoardImage {
 model Tuto {
   id             Int           @id @default(autoincrement())
   title          String?
+  image          String?       @db.LongText
   SocialNetworks SocialNetwork @relation(fields: [idSocial], references: [id])
   idSocial       Int
   URL            String

@@ -9,6 +9,8 @@ import detectSocialNetwork from 'detect-social-network';
 import { TutoDTO } from './dto/tuto.dto';
 import { HttpService } from '@nestjs/axios';
 import { SocialNetwork } from '@prisma/client';
+import getMetaData from 'metadata-scraper';
+import { MetadataDTO } from './dto/metadata.dto';
 
 @Injectable()
 export class TutoService {
@@ -24,6 +26,7 @@ export class TutoService {
       select: {
         id: true,
         title: true,
+        image: true,
         URL: true,
         idBoard: true,
         SocialNetworks: {
@@ -54,6 +57,7 @@ export class TutoService {
         select: {
           id: true,
           title: true,
+          image: true,
           URL: true,
           idBoard: true,
           SocialNetworks: {
@@ -139,17 +143,60 @@ export class TutoService {
         createTuto.url = createTuto.url.replace(/^(https:)(\/)/, '$1/$2');
     }
 
+    const metadata = await getMetaData(createTuto.url);
+
     const data = createTuto.board.map((b) => {
       return {
         URL: createTuto.url,
         idSocial: socialCompatibility.id,
         idBoard: b,
+        title:
+          metadata.title.length > 191
+            ? metadata.title.substring(0, 188) + '...'
+            : metadata.title,
+        image: metadata.image,
       };
     });
 
     await this.prisma.tuto.createMany({
       data: data,
     });
+  }
+
+  async setMetadata(idUser: number, idTuto: number): Promise<MetadataDTO> {
+    const tuto = await this.prisma.tuto.findFirst({
+      select: {
+        URL: true,
+        board: true,
+      },
+      where: {
+        id: idTuto,
+      },
+    });
+
+    if (!tuto) throw new BadRequestException("Le tuto n'existe pas");
+
+    await this.boardBelongtoUser(idUser, tuto.board.id);
+
+    const metadata = await getMetaData(tuto.URL);
+
+    await this.prisma.tuto.update({
+      where: {
+        id: idTuto,
+      },
+      data: {
+        title:
+          metadata.title.length > 191
+            ? metadata.title.substring(0, 188) + '...'
+            : metadata.title,
+        image: metadata.image,
+      },
+    });
+
+    return {
+      title: metadata.title,
+      image: metadata.image,
+    };
   }
 
   async deleteTuto(idUser: number, idTuto: number): Promise<void> {

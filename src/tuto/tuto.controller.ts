@@ -23,6 +23,8 @@ import { JwtGuard } from 'src/jwt/guards/jwt.guard';
 import { TutoDTO } from './dto/tuto.dto';
 import { DeleteTutoDTO } from './dto/delete-tuto.dto';
 import { DeleteTutosDTO } from './dto/delete-tutos.dto';
+import { MetadataDTO } from './dto/metadata.dto';
+import { SetMetadataDTO } from './dto/set-metadata.dto';
 
 @UseGuards(JwtGuard)
 @ApiTags('tuto')
@@ -119,6 +121,20 @@ export class TutoController {
   ): Promise<void> {
     createTuto.board = createTuto.board.map((b) => parseInt(b as any));
     return await this.tutoService.setTutos(req.user.sub, createTuto);
+  }
+
+  @ApiOperation({
+    summary: "Enregistre le metadata d'un anciens tuto",
+  })
+  @ApiBody({
+    type: SetMetadataDTO,
+  })
+  @Post('metadata')
+  async setMetadata(
+    @Req() req: { user: TokenPayloadInterface },
+    @Body() idTuto: SetMetadataDTO,
+  ): Promise<MetadataDTO> {
+    return await this.tutoService.setMetadata(req.user.sub, idTuto.idTuto);
   }
 
   @ApiOperation({
