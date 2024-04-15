@@ -3,12 +3,11 @@ import {
   Controller,
   Delete,
   Get,
-  Header,
   HttpCode,
   HttpStatus,
   Post,
   Req,
-  StreamableFile,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -35,7 +34,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { GoogleIdDTO } from './dto/google-id.dto';
 import { AppleIdDTO } from './dto/apple-id.dto';
 import { ConnectAppleIdDTO } from './dto/connect-apple-id.dto';
-import { createReadStream } from 'fs';
+import { Response } from 'express';
 import { join } from 'path';
 
 @ApiTags('auth')
@@ -283,14 +282,11 @@ export class AuthController {
   }
 
   @ApiOperation({
-    summary: 'Retourne les CGU au format pdf',
+    summary: 'Retourne les CGU au format html',
   })
-  @Header('Content-Type', 'application/pdf')
-  @Header('Content-Disposition', 'inline; filename=cgu.pdf')
   @Get('cgu')
-  async getCgu(): Promise<StreamableFile> {
-    const file = createReadStream(join(__dirname, 'cgu', 'HIVES-CGU.pdf'));
-    return new StreamableFile(file);
+  async getCgu(@Res() res: Response): Promise<void> {
+    return res.sendFile(join(__dirname, 'cgu', 'HIVES-CGU.html'));
   }
 
   @UseGuards(JwtGuard)
