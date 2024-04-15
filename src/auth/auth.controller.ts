@@ -286,7 +286,7 @@ export class AuthController {
     summary: 'Retourne les CGU au format pdf',
   })
   @Header('Content-Type', 'application/pdf')
-  @Header('Content-Disposition', 'attachment; filename=cgu.pdf')
+  @Header('Content-Disposition', 'inline; filename=cgu.pdf')
   @Get('cgu')
   async getCgu(): Promise<StreamableFile> {
     const file = createReadStream(join(__dirname, 'cgu', 'HIVES-CGU.pdf'));
