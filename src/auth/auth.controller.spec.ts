@@ -19,6 +19,8 @@ describe('AuthController', () => {
   const req: { user: TokenPayloadInterface } = {
     user: {
       sub: 1,
+      firstName: 'John',
+      lastName: 'Doe',
       email: 'test@test.fr',
       refreshToken: 'test',
     },

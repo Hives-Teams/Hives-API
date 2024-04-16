@@ -105,7 +105,7 @@ describe('AuthService', () => {
           password: '',
           idDevice: '',
         }),
-      ).rejects.toThrow('Forbidden Exception');
+      ).rejects.toThrow('account_not_activated');
     });
 
     it('should throw an error if password is incorrect', async () => {
@@ -203,6 +203,8 @@ describe('AuthService', () => {
     const payload: TokenPayloadInterface = {
       sub: 0,
       email: '',
+      firstName: '',
+      lastName: '',
     };
     it('should return an id of user', async () => {
       const result: TokenDTO = {
@@ -232,6 +234,8 @@ describe('AuthService', () => {
       const pay: TokenPayloadInterface = {
         sub: 0,
         email: '',
+        firstName: '',
+        lastName: '',
         refreshToken: 'jeifzoi',
       };
 
