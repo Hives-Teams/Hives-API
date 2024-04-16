@@ -41,7 +41,7 @@ model SocialAccount {
 
 model ForgotPassword {
   id         Int      @id @default(autoincrement())
-  user       User     @relation(fields: [idUser], references: [id])
+  user       User     @relation(fields: [idUser], references: [id], onDelete: Cascade)
   idUser     Int      @unique
   codeForgot Int
   createdAt  DateTime @default(now())
@@ -49,7 +49,7 @@ model ForgotPassword {
 
 model RefreshTokenUser {
   id           Int      @id @default(autoincrement())
-  user         User     @relation(fields: [idUser], references: [id])
+  user         User     @relation(fields: [idUser], references: [id], onDelete: Cascade)
   idUser       Int
   idDevice     String   @unique
   Notification String?  @unique
@@ -63,7 +63,7 @@ model Board {
   name       String
   boardImage BoardImage? @relation(fields: [idImage], references: [id])
   idImage    Int?
-  user       User        @relation(fields: [idUser], references: [id])
+  user       User        @relation(fields: [idUser], references: [id], onDelete: Cascade)
   idUser     Int
   Tuto       Tuto[]
   createdAt  DateTime    @default(now())
