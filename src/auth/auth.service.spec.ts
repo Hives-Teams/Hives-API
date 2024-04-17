@@ -179,6 +179,60 @@ describe('AuthService', () => {
     });
   });
 
+  describe('loginApple', () => {
+    it('should return a token', async () => {
+      const result: TokenDTO = {
+        access_token: '',
+        refresh_token: '',
+      };
+      jest.spyOn(service, 'loginApple').mockImplementation(async () => result);
+
+      jest.spyOn(appleSignin, 'verifyIdToken').mockResolvedValue({
+        email: '',
+        email_verified: true,
+        is_private_email: false,
+        aud: '',
+        exp: '',
+        iat: '',
+        sub: '',
+        iss: '',
+        nonce: '',
+        nonce_supported: true,
+      });
+
+      expect(
+        await service.loginApple({
+          id: '',
+          nonce: '',
+          idDevice: '',
+        }),
+      ).toBe(result);
+    });
+    it('should throw an error if jwt is incorrect', async () => {
+      jest.spyOn(appleSignin, 'verifyIdToken').mockResolvedValue({
+        email: '',
+        email_verified: true,
+        is_private_email: false,
+        aud: '',
+        exp: '',
+        iat: '',
+        sub: '',
+        iss: '',
+        nonce: '',
+        nonce_supported: true,
+      });
+      prisma.user.findFirst = jest.fn().mockResolvedValue(null);
+      prisma.user.findUnique = jest.fn().mockResolvedValue(null);
+      await expect(
+        service.loginApple({
+          id: '1',
+          nonce: '',
+          idDevice: '',
+        }),
+      ).rejects.toThrow('Erreur lors de la vérification du compte Apple');
+    });
+  });
+
   describe('activate', () => {
     it('should return an id of user', async () => {
       const result: TokenDTO = {
