@@ -150,9 +150,11 @@ export class TutoService {
         idSocial: socialCompatibility.id,
         idBoard: b,
         title:
-          metadata.title.length > 191
-            ? metadata.title.substring(0, 188) + '...'
-            : metadata.title,
+          metadata.title == 'TikTok - Make Your Day'
+            ? 'Nom du post'
+            : metadata.title.length > 191
+              ? metadata.title.substring(0, 188) + '...'
+              : metadata.title,
         image: metadata.image,
       };
     });
