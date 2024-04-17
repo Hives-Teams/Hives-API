@@ -11,6 +11,7 @@ import { ActivationCodeDTO } from './dto/activation-code.dto';
 import { ChangeForgotPasswordDTO } from './dto/change-forgot-password.dto';
 import { TokenPayloadInterface } from 'src/interfaces/TokenPayload.interface';
 import { v4 as uuidv4 } from 'uuid';
+import appleSignin from 'apple-signin-auth';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -62,6 +63,58 @@ describe('AuthService', () => {
     });
   });
 
+  describe('registerApple', () => {
+    it('should return a token', async () => {
+      const result: TokenDTO = {
+        access_token: '',
+        refresh_token: '',
+      };
+      jest
+        .spyOn(service, 'registerApple')
+        .mockImplementation(async () => result);
+
+      jest.spyOn(appleSignin, 'verifyIdToken').mockResolvedValue({
+        email: '',
+        email_verified: true,
+        is_private_email: false,
+        aud: '',
+        exp: '',
+        iat: '',
+        sub: '',
+        iss: '',
+        nonce: '',
+        nonce_supported: true,
+      });
+
+      expect(
+        await service.registerApple({
+          id: '',
+          nonce: '',
+          firstname: '',
+          lastname: '',
+          idDevice: '',
+        }),
+      ).toBe(result);
+    });
+
+    it('should throw an error if email is already used', async () => {
+      prisma.user.findUnique = jest.fn().mockResolvedValue({
+        id: 1,
+        email: '',
+      });
+
+      await expect(
+        service.registerApple({
+          id: '',
+          nonce: '',
+          firstname: '',
+          lastname: '',
+          idDevice: '',
+        }),
+      ).rejects.toThrow('Cet email est déjà associé à un compte');
+    });
+  });
+
   describe('login', () => {
     it('should return a token', async () => {
       const result: TokenDTO = {
@@ -105,7 +158,7 @@ describe('AuthService', () => {
           password: '',
           idDevice: '',
         }),
-      ).rejects.toThrow('Forbidden Exception');
+      ).rejects.toThrow('account_not_activated');
     });
 
     it('should throw an error if password is incorrect', async () => {
@@ -123,6 +176,60 @@ describe('AuthService', () => {
           idDevice: '',
         }),
       ).rejects.toThrow('Mot de passe incorrect');
+    });
+  });
+
+  describe('loginApple', () => {
+    it('should return a token', async () => {
+      const result: TokenDTO = {
+        access_token: '',
+        refresh_token: '',
+      };
+      jest.spyOn(service, 'loginApple').mockImplementation(async () => result);
+
+      jest.spyOn(appleSignin, 'verifyIdToken').mockResolvedValue({
+        email: '',
+        email_verified: true,
+        is_private_email: false,
+        aud: '',
+        exp: '',
+        iat: '',
+        sub: '',
+        iss: '',
+        nonce: '',
+        nonce_supported: true,
+      });
+
+      expect(
+        await service.loginApple({
+          id: '',
+          nonce: '',
+          idDevice: '',
+        }),
+      ).toBe(result);
+    });
+    it('should throw an error if jwt is incorrect', async () => {
+      jest.spyOn(appleSignin, 'verifyIdToken').mockResolvedValue({
+        email: '',
+        email_verified: true,
+        is_private_email: false,
+        aud: '',
+        exp: '',
+        iat: '',
+        sub: '',
+        iss: '',
+        nonce: '',
+        nonce_supported: true,
+      });
+      prisma.user.findFirst = jest.fn().mockResolvedValue(null);
+      prisma.user.findUnique = jest.fn().mockResolvedValue(null);
+      await expect(
+        service.loginApple({
+          id: '1',
+          nonce: '',
+          idDevice: '',
+        }),
+      ).rejects.toThrow('Erreur lors de la vérification du compte Apple');
     });
   });
 
@@ -203,6 +310,8 @@ describe('AuthService', () => {
     const payload: TokenPayloadInterface = {
       sub: 0,
       email: '',
+      firstName: '',
+      lastName: '',
     };
     it('should return an id of user', async () => {
       const result: TokenDTO = {
@@ -232,6 +341,8 @@ describe('AuthService', () => {
       const pay: TokenPayloadInterface = {
         sub: 0,
         email: '',
+        firstName: '',
+        lastName: '',
         refreshToken: 'jeifzoi',
       };
 

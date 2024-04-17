@@ -16,6 +16,8 @@ describe('TutoController', () => {
     user: {
       sub: 1,
       email: 'test@test.fr',
+      firstName: 'John',
+      lastName: 'Doe',
       refreshToken: 'test',
     },
   };
@@ -52,6 +54,8 @@ describe('TutoController', () => {
           id: 1,
           title: 'test',
           URL: 'test',
+          image: 'test',
+          createdAt: new Date(),
           idBoard: 1,
           SocialNetworks: {
             name: 'test',
@@ -70,6 +74,8 @@ describe('TutoController', () => {
           id: 1,
           title: 'test',
           URL: 'test',
+          image: 'test',
+          createdAt: new Date(),
           idBoard: 1,
           SocialNetworks: {
             name: 'test',

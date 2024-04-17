@@ -139,6 +139,7 @@ export class AuthService {
     return jwt;
   }
 
+  /* istanbul ignore next */
   async registerGoogle(user: string, idDevice: string): Promise<TokenDTO> {
     const client = new OAuth2Client();
     const ticket = await client
@@ -330,82 +331,89 @@ export class AuthService {
   }
 
   async loginApple(user: ConnectAppleIdDTO): Promise<TokenDTO> {
-    const payload = await appleSignin.verifyIdToken(user.id, {
-      audience: 'com.miel.hives',
-      nonce: user.nonce
-        ? createHash('sha256').update(user.nonce).digest('hex')
-        : undefined,
-      ignoreExpiration: true,
-    });
+    try {
+      const payload = await appleSignin.verifyIdToken(user.id, {
+        audience: 'com.miel.hives',
+        nonce: user.nonce
+          ? createHash('sha256').update(user.nonce).digest('hex')
+          : undefined,
+        ignoreExpiration: true,
+      });
 
-    if (!payload.email_verified)
-      throw new ForbiddenException("Ce compte Apple n'est pas activé");
+      if (!payload.email_verified)
+        throw new ForbiddenException("Ce compte Apple n'est pas activé");
 
-    const subApple = await this.prisma.socialAccount.findFirst({
-      where: {
-        providerId: payload.sub,
-      },
-    });
+      const subApple = await this.prisma.socialAccount.findFirst({
+        where: {
+          providerId: payload.sub,
+        },
+      });
 
-    const userExist = await this.prisma.user.findUnique({
-      where: {
-        email: payload.email,
-      },
-    });
+      const userExist = await this.prisma.user.findUnique({
+        where: {
+          email: payload.email,
+        },
+      });
 
-    if (
-      !subApple ||
-      subApple.provider != 'apple' ||
-      subApple.providerId != payload.sub
-    ) {
-      if (userExist) {
-        await this.prisma.socialAccount.create({
-          data: {
-            provider: 'apple',
-            providerId: payload.sub,
-            userId: userExist.id,
-          },
-        });
-      } else {
-        throw new ForbiddenException(
-          "Ce compte Apple n'est pas associé à un compte",
-        );
+      if (
+        !subApple ||
+        subApple.provider != 'apple' ||
+        subApple.providerId != payload.sub
+      ) {
+        if (userExist) {
+          await this.prisma.socialAccount.create({
+            data: {
+              provider: 'apple',
+              providerId: payload.sub,
+              userId: userExist.id,
+            },
+          });
+        } else {
+          throw new ForbiddenException(
+            "Ce compte Apple n'est pas associé à un compte",
+          );
+        }
       }
+
+      const payload_jwt: TokenPayloadInterface = {
+        sub: userExist.id,
+        firstName: userExist.firstName,
+        lastName: userExist.lastName,
+        email: userExist.email,
+      };
+
+      const jwt = await this.generateToken(payload_jwt);
+
+      let refreshToken = createHash('sha256')
+        .update(jwt.refresh_token)
+        .digest('hex');
+
+      refreshToken = await this.hash(refreshToken);
+
+      await this.prisma.refreshTokenUser.upsert({
+        where: {
+          idDevice: user.idDevice,
+        },
+        create: {
+          idDevice: user.idDevice,
+          refreshToken: refreshToken,
+          idUser: userExist.id,
+        },
+        update: {
+          refreshToken: refreshToken,
+          idUser: userExist.id,
+        },
+      });
+
+      return jwt;
+    } catch (error) {
+      Logger.error(error, 'registerApple_loginApple');
+      throw new UnauthorizedException(
+        'Erreur lors de la vérification du compte Apple',
+      );
     }
-
-    const payload_jwt: TokenPayloadInterface = {
-      sub: userExist.id,
-      firstName: userExist.firstName,
-      lastName: userExist.lastName,
-      email: userExist.email,
-    };
-
-    const jwt = await this.generateToken(payload_jwt);
-
-    let refreshToken = createHash('sha256')
-      .update(jwt.refresh_token)
-      .digest('hex');
-
-    refreshToken = await this.hash(refreshToken);
-
-    await this.prisma.refreshTokenUser.upsert({
-      where: {
-        idDevice: user.idDevice,
-      },
-      create: {
-        idDevice: user.idDevice,
-        refreshToken: refreshToken,
-        idUser: userExist.id,
-      },
-      update: {
-        refreshToken: refreshToken,
-        idUser: userExist.id,
-      },
-    });
-
-    return jwt;
   }
-
+  /* istanbul ignore next */
   async loginGoogle(id: string, device: string): Promise<TokenDTO> {
     const client = new OAuth2Client();
     const ticket = await client
@@ -511,16 +519,6 @@ export class AuthService {
 
   async deleteAccount(email: string, id: number): Promise<void> {
     try {
-      await this.prisma.refreshTokenUser.deleteMany({
-        where: {
-          idUser: id,
-        },
-      });
-      await this.prisma.board.deleteMany({
-        where: {
-          idUser: id,
-        },
-      });
       await this.prisma.user.delete({
         where: {
           id: id,

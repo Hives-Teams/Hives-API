@@ -14,6 +14,8 @@ describe('BoardController', () => {
   const req: { user: TokenPayloadInterface } = {
     user: {
       sub: 1,
+      firstName: 'John',
+      lastName: 'Doe',
       email: 'test@test.fr',
       refreshToken: 'test',
     },
@@ -41,6 +43,9 @@ describe('BoardController', () => {
           name: 'test',
           boardImage: {
             name: 'test',
+          },
+          _count: {
+            Tuto: 1,
           },
         },
       ];

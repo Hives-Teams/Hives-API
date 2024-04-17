@@ -19,6 +19,8 @@ describe('AuthController', () => {
   const req: { user: TokenPayloadInterface } = {
     user: {
       sub: 1,
+      firstName: 'John',
+      lastName: 'Doe',
       email: 'test@test.fr',
       refreshToken: 'test',
     },
@@ -59,6 +61,91 @@ describe('AuthController', () => {
     });
   });
 
+  describe('registerApple', () => {
+    it('should return a token', async () => {
+      const result: TokenDTO = {
+        access_token: '',
+        refresh_token: '',
+      };
+      jest
+        .spyOn(service, 'registerApple')
+        .mockImplementation(async () => result);
+    });
+    it('should throw an error apple account is not verified', async () => {
+      jest.spyOn(service, 'registerApple').mockImplementation(async () => {
+        throw new Error('Compte Apple non vérifié');
+      });
+
+      await expect(
+        controller.registerApple({
+          id: 'test',
+          firstname: 'test',
+          lastname: 'test',
+          nonce: 'test',
+          idDevice: uuidv4(),
+        }),
+      ).rejects.toThrow('Compte Apple non vérifié');
+    });
+    it('should throw an error if account is already register', async () => {
+      jest.spyOn(service, 'registerApple').mockImplementation(async () => {
+        throw new Error('Cet email est déjà associé à un compte');
+      });
+
+      await expect(
+        controller.registerApple({
+          id: 'test',
+          firstname: 'test',
+          lastname: 'test',
+          nonce: 'test',
+          idDevice: uuidv4(),
+        }),
+      ).rejects.toThrow('Cet email est déjà associé à un compte');
+    });
+  });
+
+  describe('registerGoogle', () => {
+    it('should return a token', async () => {
+      const result: TokenDTO = {
+        access_token: '',
+        refresh_token: '',
+      };
+      jest
+        .spyOn(service, 'registerGoogle')
+        .mockImplementation(async () => result);
+
+      expect(
+        await controller.registerGoogle({
+          id: 'test',
+          idDevice: uuidv4(),
+        }),
+      ).toBe(result);
+    });
+    it('should throw an error google account is not verified', async () => {
+      jest.spyOn(service, 'registerGoogle').mockImplementation(async () => {
+        throw new Error('Compte Google non vérifié');
+      });
+
+      await expect(
+        controller.registerGoogle({
+          id: 'test',
+          idDevice: uuidv4(),
+        }),
+      ).rejects.toThrow('Compte Google non vérifié');
+    });
+    it('should throw an error if account is already register', async () => {
+      jest.spyOn(service, 'registerGoogle').mockImplementation(async () => {
+        throw new Error('Cet email est déjà associé à un compte');
+      });
+
+      await expect(
+        controller.registerGoogle({
+          id: 'test',
+          idDevice: uuidv4(),
+        }),
+      ).rejects.toThrow('Cet email est déjà associé à un compte');
+    });
+  });
+
   describe('activate', () => {
     it('should return a token', async () => {
       const result: TokenDTO = {
@@ -92,6 +179,111 @@ describe('AuthController', () => {
           idDevice: '',
         }),
       ).toBe(result);
+    });
+  });
+
+  describe('loginGoogle', () => {
+    it('should return a token', async () => {
+      const result: TokenDTO = {
+        access_token: 'test',
+        refresh_token: 'test',
+      };
+      jest.spyOn(service, 'loginGoogle').mockImplementation(async () => result);
+      expect(
+        await controller.loginGoogle({ id: 'test', idDevice: uuidv4() }),
+      ).toBe(result);
+    });
+    it('should throw an error google account is not verified', async () => {
+      jest.spyOn(service, 'loginGoogle').mockImplementation(async () => {
+        throw new Error('Compte Google non vérifié');
+      });
+
+      await expect(
+        controller.loginGoogle({ id: 'test', idDevice: uuidv4() }),
+      ).rejects.toThrow('Compte Google non vérifié');
+    });
+    it('should throw an error if account is not register', async () => {
+      jest.spyOn(service, 'loginGoogle').mockImplementation(async () => {
+        throw new Error("Ce compte Google n'est pas associé à un compte");
+      });
+
+      await expect(
+        controller.loginGoogle({ id: 'test', idDevice: uuidv4() }),
+      ).rejects.toThrow("Ce compte Google n'est pas associé à un compte");
+    });
+  });
+
+  describe('loginApple', () => {
+    it('should return a token', async () => {
+      const result: TokenDTO = {
+        access_token: 'test',
+        refresh_token: 'test',
+      };
+      jest.spyOn(service, 'loginApple').mockImplementation(async () => result);
+      expect(
+        await controller.loginApple({
+          id: 'test',
+          idDevice: uuidv4(),
+          nonce: 'test',
+        }),
+      ).toBe(result);
+    });
+    it('should throw an error apple account is not verified', async () => {
+      jest.spyOn(service, 'loginApple').mockImplementation(async () => {
+        throw new Error('Compte Apple non vérifié');
+      });
+
+      await expect(
+        controller.loginApple({
+          id: 'test',
+          idDevice: uuidv4(),
+          nonce: 'test',
+        }),
+      ).rejects.toThrow('Compte Apple non vérifié');
+    });
+    it('should throw an error if account is not register', async () => {
+      jest.spyOn(service, 'loginApple').mockImplementation(async () => {
+        throw new Error("Ce compte Apple n'est pas associé à un compte");
+      });
+
+      await expect(
+        controller.loginApple({
+          id: 'test',
+          idDevice: uuidv4(),
+          nonce: 'test',
+        }),
+      ).rejects.toThrow("Ce compte Apple n'est pas associé à un compte");
+    });
+  });
+
+  describe('loginGoogle', () => {
+    it('should return a token', async () => {
+      const result: TokenDTO = {
+        access_token: 'test',
+        refresh_token: 'test',
+      };
+      jest.spyOn(service, 'loginGoogle').mockImplementation(async () => result);
+      expect(
+        await controller.loginGoogle({ id: 'test', idDevice: uuidv4() }),
+      ).toBe(result);
+    });
+    it('should throw an error google account is not actived', async () => {
+      jest.spyOn(service, 'loginGoogle').mockImplementation(async () => {
+        throw new Error("Ce compte Google n'est pas activé");
+      });
+
+      await expect(
+        controller.loginGoogle({ id: 'test', idDevice: uuidv4() }),
+      ).rejects.toThrow("Ce compte Google n'est pas activé");
+    });
+    it('should throw an error if account is not register', async () => {
+      jest.spyOn(service, 'loginGoogle').mockImplementation(async () => {
+        throw new Error("Ce compte Google n'est pas associé à un compte");
+      });
+
+      await expect(
+        controller.loginGoogle({ id: 'test', idDevice: uuidv4() }),
+      ).rejects.toThrow("Ce compte Google n'est pas associé à un compte");
     });
   });
 
