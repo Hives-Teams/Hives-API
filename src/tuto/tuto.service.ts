@@ -134,8 +134,7 @@ export class TutoService {
 
     if (socialCompatibility.name == 'tiktok') {
       const longUrl = await this.httpService.axiosRef.get(createTuto.url);
-      createTuto.url =
-        longUrl.request._redirectable._options.href.split('?')[0];
+      createTuto.url = longUrl.request._redirectable._options.href;
     }
 
     if (socialCompatibility.name == 'instagram') {
