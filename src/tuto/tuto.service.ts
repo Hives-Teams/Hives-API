@@ -134,8 +134,7 @@ export class TutoService {
 
     if (socialCompatibility.name == 'tiktok') {
       const longUrl = await this.httpService.axiosRef.get(createTuto.url);
-      createTuto.url =
-        longUrl.request._redirectable._options.href.split('?')[0];
+      createTuto.url = longUrl.request._redirectable._options.href;
     }
 
     if (socialCompatibility.name == 'instagram') {
@@ -151,9 +150,11 @@ export class TutoService {
         idSocial: socialCompatibility.id,
         idBoard: b,
         title:
-          metadata.title.length > 191
-            ? metadata.title.substring(0, 188) + '...'
-            : metadata.title,
+          metadata.title == 'TikTok - Make Your Day'
+            ? 'Nom du post'
+            : metadata.title.length > 191
+              ? metadata.title.substring(0, 188) + '...'
+              : metadata.title,
         image: metadata.image,
       };
     });
