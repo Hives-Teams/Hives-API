@@ -256,6 +256,37 @@ describe('AuthController', () => {
     });
   });
 
+  describe('loginGoogle', () => {
+    it('should return a token', async () => {
+      const result: TokenDTO = {
+        access_token: 'test',
+        refresh_token: 'test',
+      };
+      jest.spyOn(service, 'loginGoogle').mockImplementation(async () => result);
+      expect(
+        await controller.loginGoogle({ id: 'test', idDevice: uuidv4() }),
+      ).toBe(result);
+    });
+    it('should throw an error google account is not actived', async () => {
+      jest.spyOn(service, 'loginGoogle').mockImplementation(async () => {
+        throw new Error("Ce compte Google n'est pas activé");
+      });
+
+      await expect(
+        controller.loginGoogle({ id: 'test', idDevice: uuidv4() }),
+      ).rejects.toThrow("Ce compte Google n'est pas activé");
+    });
+    it('should throw an error if account is not register', async () => {
+      jest.spyOn(service, 'loginGoogle').mockImplementation(async () => {
+        throw new Error("Ce compte Google n'est pas associé à un compte");
+      });
+
+      await expect(
+        controller.loginGoogle({ id: 'test', idDevice: uuidv4() }),
+      ).rejects.toThrow("Ce compte Google n'est pas associé à un compte");
+    });
+  });
+
   describe('refreshToken', () => {
     it('should return a token', async () => {
       const result: TokenDTO = {
