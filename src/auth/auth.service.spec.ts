@@ -11,6 +11,7 @@ import { ActivationCodeDTO } from './dto/activation-code.dto';
 import { ChangeForgotPasswordDTO } from './dto/change-forgot-password.dto';
 import { TokenPayloadInterface } from 'src/interfaces/TokenPayload.interface';
 import { v4 as uuidv4 } from 'uuid';
+import appleSignin from 'apple-signin-auth';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -57,6 +58,58 @@ describe('AuthService', () => {
           firstname: '',
           lastname: '',
           password: '',
+        }),
+      ).rejects.toThrow('Cet email est déjà associé à un compte');
+    });
+  });
+
+  describe('registerApple', () => {
+    it('should return a token', async () => {
+      const result: TokenDTO = {
+        access_token: '',
+        refresh_token: '',
+      };
+      jest
+        .spyOn(service, 'registerApple')
+        .mockImplementation(async () => result);
+
+      jest.spyOn(appleSignin, 'verifyIdToken').mockResolvedValue({
+        email: '',
+        email_verified: true,
+        is_private_email: false,
+        aud: '',
+        exp: '',
+        iat: '',
+        sub: '',
+        iss: '',
+        nonce: '',
+        nonce_supported: true,
+      });
+
+      expect(
+        await service.registerApple({
+          id: '',
+          nonce: '',
+          firstname: '',
+          lastname: '',
+          idDevice: '',
+        }),
+      ).toBe(result);
+    });
+
+    it('should throw an error if email is already used', async () => {
+      prisma.user.findUnique = jest.fn().mockResolvedValue({
+        id: 1,
+        email: '',
+      });
+
+      await expect(
+        service.registerApple({
+          id: '',
+          nonce: '',
+          firstname: '',
+          lastname: '',
+          idDevice: '',
         }),
       ).rejects.toThrow('Cet email est déjà associé à un compte');
     });
