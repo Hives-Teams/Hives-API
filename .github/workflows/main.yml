@@ -27,6 +27,7 @@ jobs:
         echo CLIENT_ID_MAIL=${{ secrets.CLIENT_ID_MAIL }} >> .env
         echo CLIENT_SECRET_MAIL=${{ secrets.CLIENT_SECRET_MAIL }} >> .env
         echo REFRESH_TOKEN_MAIL=${{ secrets.REFRESH_TOKEN_MAIL }} >> .env
+        echo GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} >> .env
 
     - name: Copy file via ssh
       uses: appleboy/scp-action@v0.1.7
