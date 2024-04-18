@@ -209,18 +209,7 @@ describe('AuthService', () => {
       ).toBe(result);
     });
     it('should throw an error if jwt is incorrect', async () => {
-      jest.spyOn(appleSignin, 'verifyIdToken').mockResolvedValue({
-        email: '',
-        email_verified: true,
-        is_private_email: false,
-        aud: '',
-        exp: '',
-        iat: '',
-        sub: '',
-        iss: '',
-        nonce: '',
-        nonce_supported: true,
-      });
+      jest.spyOn(appleSignin, 'verifyIdToken').mockRejectedValue('error');
       prisma.user.findFirst = jest.fn().mockResolvedValue(null);
       prisma.user.findUnique = jest.fn().mockResolvedValue(null);
       await expect(
@@ -275,7 +264,7 @@ describe('AuthService', () => {
     });
 
     it('should throw an error if email is incorrect', async () => {
-      prisma.user.findUnique = jest.fn().mockResolvedValue(null);
+      prisma.user.findUnique = jest.fn().mockRejectedValue('error');
 
       await expect(service.sendForgotPasswordEmail('')).rejects.toThrow(
         "Cette adresse email n'est relié à aucun compte",
@@ -372,13 +361,12 @@ describe('AuthService', () => {
 
   describe('deleteAccount', () => {
     it('should return void', async () => {
-      jest.spyOn(service, 'deleteAccount').mockImplementation(async () => {});
-
+      prisma.user.delete = jest.fn().mockResolvedValue({});
       expect(await service.deleteAccount('', 0)).toBe(undefined);
     });
 
     it('should throw an error if user is incorrect', async () => {
-      prisma.user.findUnique = jest.fn().mockResolvedValue(null);
+      prisma.user.delete = jest.fn().mockRejectedValue('error');
 
       await expect(service.deleteAccount('', 0)).rejects.toThrow(
         "Le compte n'a pas pu être supprimé",
