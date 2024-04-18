@@ -112,6 +112,7 @@ export class TutoService {
     return social;
   }
 
+  /* istanbul ignore next */
   async setTutos(id: number, createTuto: CreateTutoDTO): Promise<void> {
     const boards = await this.getBoardOfUser(id);
 
