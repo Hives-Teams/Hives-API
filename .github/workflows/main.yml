@@ -29,6 +29,20 @@ jobs:
         echo REFRESH_TOKEN_MAIL=${{ secrets.REFRESH_TOKEN_MAIL }} >> .env
         echo GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} >> .env
 
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ secrets.REGISTRY }}
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PWD }}
+
+    - name: Build and push Docker image
+      run: |
+        docker build --no-cache -t ${{ secrets.REGISTRY }}/hives-backend:migration -f prod.Dockerfile .
+        docker push ${{ secrets.REGISTRY }}/hives-backend:migration
+        docker build --no-cache -t ${{ secrets.REGISTRY }}/hives-backend:prod -f prod.Dockerfile .
+        docker push ${{ secrets.REGISTRY }}/hives-backend:prod
+
     - name: Copy file via ssh
       uses: appleboy/scp-action@v0.1.7
       with:
@@ -37,7 +51,7 @@ jobs:
         port: ${{ secrets.PORT }}
         key: ${{ secrets.KEY }}
         rm: true
-        source: "."
+        source: ".env,docker-compose.yml"
         target: api
 
     - name: deploy api
@@ -50,5 +64,5 @@ jobs:
         script: |
           sudo docker compose -f api/docker-compose.yml up --build migration
           sudo docker rm hives-migration
-          sudo docker image rm hives-backend:migration
+          sudo docker image rm registry.hivesapp.fr/hives-backend:migration
           sudo docker compose -f api/docker-compose.yml up --build -d prod

@@ -16,7 +16,6 @@ EXPOSE 9229
 FROM base as build
 WORKDIR /build
 COPY . .
-ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN npm ci
 RUN npm run build
 
