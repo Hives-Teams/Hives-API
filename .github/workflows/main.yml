@@ -38,8 +38,6 @@ jobs:
 
     - name: Build and push Docker image
       run: |
-        docker build --no-cache -t ${{ secrets.REGISTRY }}/hives-backend:migration -f prod.Dockerfile .
-        docker push ${{ secrets.REGISTRY }}/hives-backend:migration
         docker build --no-cache -t ${{ secrets.REGISTRY }}/hives-backend:prod -f prod.Dockerfile .
         docker push ${{ secrets.REGISTRY }}/hives-backend:prod
 
@@ -61,8 +59,4 @@ jobs:
         username: ${{ secrets.USER }}
         key: ${{ secrets.KEY }}
         port: ${{ secrets.PORT }}
-        script: |
-          sudo docker compose -f api/docker-compose.yml up --build migration
-          sudo docker rm hives-migration
-          sudo docker image rm registry.hivesapp.fr/hives-backend:migration
-          sudo docker compose -f api/docker-compose.yml up --build -d prod
+        script: sudo docker compose -f api/docker-compose.yml up --build -d prod

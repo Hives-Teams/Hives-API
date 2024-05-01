@@ -58,17 +58,6 @@ services:
         max-size: '10m'
         max-file: '3'
 
-  migration:
-    container_name: hives-migration
-    image: registry.hivesapp.fr/hives-backend:migration
-    networks:
-      - db
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-
   db:
     image: mariadb:lts
     restart: always
