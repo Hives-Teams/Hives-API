@@ -26,19 +26,14 @@ COPY --from=build /build/package.json /app
 COPY --from=build /build/package-lock.json /app
 COPY --from=build /build/dist /app/dist
 COPY --from=build /build/prisma/ /app/prisma/
+COPY --from=build /build/prod.sh /app
 RUN npm ci
 USER node
 EXPOSE 3000
-CMD [ "node", "dist/main" ]
+CMD [ "/bin/sh", "prod.sh" ]
 
 FROM base as test
 WORKDIR /test
 COPY . .
 RUN npm ci
 CMD [ "npm", "run", "test:cov" ]
-
-FROM base as migration
-WORKDIR /build
-COPY . .
-RUN npm ci
-CMD [ "npm", "run", "migration" ]
