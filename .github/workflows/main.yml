@@ -37,10 +37,13 @@ jobs:
         username: ${{ secrets.REGISTRY_USERNAME }}
         password: ${{ secrets.REGISTRY_PWD }}     
 
-    - name: Build and push Docker image
-      run: |
-        docker build --no-cache --target prod -t ${{ secrets.REGISTRY }}/hives-backend:prod -f Dockerfile .
-        docker push ${{ secrets.REGISTRY }}/hives-backend:prod
+    - name: Build and push
+      uses: docker/build-push-action@v5
+      with:
+        push: true
+        no-cache: true
+        target: prod
+        tags: ${{ secrets.REGISTRY }}/hives-backend:prod
 
     - name: Copy file via ssh
       uses: appleboy/scp-action@v0.1.7
