@@ -38,14 +38,14 @@ services:
     container_name: hives-backend
     image: registry.hivesapp.fr/hives-backend:prod
     environment:
-      - JWT=${JWT}
-      - REFRESH=${REFRESH}
-      - DATABASE_URL=${DATABASE_URL}
-      - PORT=${PORT}
-      - EMAIL=${EMAIL}
-      - CLIENT_ID_MAIL=${CLIENT_ID_MAIL}
-      - CLIENT_SECRET_MAIL=${CLIENT_SECRET_MAIL}
-      - REFRESH_TOKEN_MAIL=${REFRESH_TOKEN_MAIL}
+      JWT: "${JWT}"
+      REFRESH: "${REFRESH}"
+      DATABASE_URL: "${DATABASE_URL}"
+      PORT: "${PORT}"
+      EMAIL: "${EMAIL}"
+      CLIENT_ID_MAIL: "${CLIENT_ID_MAIL}"
+      CLIENT_SECRET_MAIL: "${CLIENT_SECRET_MAIL}"
+      REFRESH_TOKEN_MAIL!: "${REFRESH_TOKEN_MAIL}"
     restart: always
     labels:
       - 'traefik.enable=true'
