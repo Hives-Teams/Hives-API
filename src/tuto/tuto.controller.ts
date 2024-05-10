@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -26,6 +27,7 @@ import { DeleteTutoDTO } from './dto/delete-tuto.dto';
 import { DeleteTutosDTO } from './dto/delete-tutos.dto';
 import { MetadataDTO } from './dto/metadata.dto';
 import { SetMetadataDTO } from './dto/set-metadata.dto';
+import { UpdateTutoDTO } from './dto/update-tuto.dto';
 
 @UseGuards(JwtGuard)
 @ApiTags('tuto')
@@ -78,8 +80,7 @@ export class TutoController {
   }
 
   @ApiOperation({
-    summary:
-      "Récupère les tutos d'un Board via son idB + filtre réseau sociaux",
+    summary: "Récupère les tutos d'un Board via son id + filtre réseau sociaux",
   })
   @ApiOkResponse({
     type: TutoDTO,
@@ -122,6 +123,24 @@ export class TutoController {
   ): Promise<void> {
     createTuto.board = createTuto.board.map((b) => parseInt(b as any));
     return await this.tutoService.setTutos(req.user.sub, createTuto);
+  }
+
+  @ApiOperation({
+    summary: 'Modifie le nom du posts',
+  })
+  @ApiBody({
+    type: UpdateTutoDTO,
+  })
+  @Put()
+  async updateTuto(
+    @Req() req: { user: TokenPayloadInterface },
+    @Body() tuto: UpdateTutoDTO,
+  ): Promise<void> {
+    return await this.tutoService.updateTuto(
+      req.user.sub,
+      tuto.idTuto,
+      tuto.title,
+    );
   }
 
   @ApiOperation({

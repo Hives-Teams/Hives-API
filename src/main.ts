@@ -24,7 +24,6 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000/',
       'https://hives-dev-7da4a04fb1e4.herokuapp.com/',
-      'https://api.hivesapp.fr/',
     ],
     methods: 'GET,HEAD,POST,DELETE',
     allowedHeaders: 'Content-Type, Accept',

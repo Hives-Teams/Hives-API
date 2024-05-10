@@ -11,6 +11,7 @@ import { TutoDTO } from './dto/tuto.dto';
 import { HttpService } from '@nestjs/axios';
 import getMetaData from 'metadata-scraper';
 import { MetadataDTO } from './dto/metadata.dto';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class TutoService {
@@ -89,8 +90,8 @@ export class TutoService {
           ],
         },
       });
-    } catch (error) {
-      Logger.error(error, 'TutoService.getTutoBySocial');
+    } catch (err) {
+      Logger.error(err, 'TutoService.getTutoBySocial');
       throw new BadRequestException('Format du tableau incorrect');
     }
   }
@@ -186,6 +187,29 @@ export class TutoService {
     });
   }
 
+  async updateTuto(
+    idUser: number,
+    idTuto: number,
+    nameTuto: string,
+  ): Promise<void> {
+    await this.prisma.tuto
+      .update({
+        data: {
+          title: nameTuto,
+        },
+        where: {
+          board: {
+            idUser: idUser,
+          },
+          id: idTuto,
+        },
+      })
+      .catch((err: PrismaClientKnownRequestError) => {
+        Logger.error(err, 'TutoService.editTuto');
+        throw new BadRequestException("Le posts n'existe pas");
+      });
+  }
+
   async setMetadata(idUser: number, idTuto: number): Promise<MetadataDTO> {
     const tuto = await this.prisma.tuto
       .findFirstOrThrow({
@@ -206,7 +230,7 @@ export class TutoService {
           ],
         },
       })
-      .catch((err) => {
+      .catch((err: PrismaClientKnownRequestError) => {
         Logger.error(err, 'TutoService.setMetadata');
         throw new BadRequestException("Le tuto n'existe pas");
       });
@@ -244,7 +268,7 @@ export class TutoService {
           },
         },
       })
-      .catch((err) => {
+      .catch((err: PrismaClientKnownRequestError) => {
         Logger.error(err, 'TutoService.deleteTuto');
         throw new BadRequestException("Le tuto n'existe pas");
       });
