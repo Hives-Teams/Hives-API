@@ -127,7 +127,6 @@ export class TutoService {
     return social;
   }
 
-  /* istanbul ignore next */
   async setTutos(idUser: number, createTuto: CreateTutoDTO): Promise<void> {
     const boards = await this.prisma.board
       .findMany({
