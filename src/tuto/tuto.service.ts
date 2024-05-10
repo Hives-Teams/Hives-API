@@ -2,13 +2,13 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTutoDTO } from './dto/create-tuto.dto';
 import detectSocialNetwork from 'detect-social-network';
 import { TutoDTO } from './dto/tuto.dto';
 import { HttpService } from '@nestjs/axios';
-import { SocialNetwork } from '@prisma/client';
 import getMetaData from 'metadata-scraper';
 import { MetadataDTO } from './dto/metadata.dto';
 
@@ -20,9 +20,7 @@ export class TutoService {
   ) {}
 
   async getTuto(id: number, idBoard: number): Promise<TutoDTO[]> {
-    await this.boardBelongtoUser(id, idBoard);
-
-    const tuto: TutoDTO[] = await this.prisma.tuto.findMany({
+    return await this.prisma.tuto.findMany({
       select: {
         id: true,
         title: true,
@@ -37,10 +35,18 @@ export class TutoService {
         createdAt: true,
       },
       where: {
-        idBoard: idBoard,
+        AND: [
+          {
+            board: {
+              idUser: id,
+            },
+          },
+          {
+            idBoard: idBoard,
+          },
+        ],
       },
     });
-    return tuto;
   }
 
   async getTutoBySocial(
@@ -48,12 +54,10 @@ export class TutoService {
     idBoard: number,
     social: string,
   ): Promise<TutoDTO[]> {
-    await this.boardBelongtoUser(idUser, idBoard);
-
     try {
       const socialArray: string[] = JSON.parse(social);
 
-      const tuto: TutoDTO[] = await this.prisma.tuto.findMany({
+      return await this.prisma.tuto.findMany({
         select: {
           id: true,
           title: true,
@@ -77,19 +81,21 @@ export class TutoService {
                 name: { in: socialArray },
               },
             },
+            {
+              board: {
+                idUser: idUser,
+              },
+            },
           ],
         },
       });
-
-      return tuto;
     } catch (error) {
+      Logger.error(error, 'TutoService.getTutoBySocial');
       throw new BadRequestException('Format du tableau incorrect');
     }
   }
 
   async getSocialByIdBoard(idUser: number, idBoard: number): Promise<string[]> {
-    await this.boardBelongtoUser(idUser, idBoard);
-
     const socialPrisma = await this.prisma.socialNetwork.findMany({
       select: {
         name: true,
@@ -97,7 +103,16 @@ export class TutoService {
       where: {
         Tuto: {
           some: {
-            idBoard: idBoard,
+            AND: [
+              {
+                board: {
+                  idUser: idUser,
+                },
+              },
+              {
+                idBoard: idBoard,
+              },
+            ],
           },
         },
       },
@@ -113,35 +128,42 @@ export class TutoService {
   }
 
   /* istanbul ignore next */
-  async setTutos(id: number, createTuto: CreateTutoDTO): Promise<void> {
-    const boards = await this.getBoardOfUser(id);
+  async setTutos(idUser: number, createTuto: CreateTutoDTO): Promise<void> {
+    const boards = await this.prisma.board
+      .findMany({
+        select: {
+          id: true,
+        },
+        where: {
+          id: {
+            in: createTuto.board,
+          },
+          idUser: idUser,
+        },
+      })
+      .then((b) => b.map((b) => b.id));
 
-    const belongToUser = createTuto.board.every((b) => boards.includes(b));
-
-    if (!belongToUser)
+    if (boards.length == 0)
       throw new ForbiddenException(
         "au moins un board n'existe pas pour cette utilisateur",
       );
 
     if (!this.isValidUrl(createTuto.url))
-      throw new BadRequestException('Pas une URL');
+      throw new BadRequestException("Ce champ de texte n'est pas une URL");
 
     const url = detectSocialNetwork(createTuto.url);
-    const social = await this.listSocial();
+    const social = await this.prisma.socialNetwork.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
     const socialCompatibility = social.find((s) => s.name == url);
 
     if (!socialCompatibility)
       throw new BadRequestException('Réseau social non compatible');
 
-    if (socialCompatibility.name == 'tiktok') {
-      const longUrl = await this.httpService.axiosRef.get(createTuto.url);
-      createTuto.url = longUrl.request._redirectable._options.href;
-    }
-
-    if (socialCompatibility.name == 'instagram') {
-      if (!/\/\//.test(createTuto.url))
-        createTuto.url = createTuto.url.replace(/^(https:)(\/)/, '$1/$2');
-    }
+    createTuto.url = await this.getLongUrl(createTuto.url);
 
     const metadata = await getMetaData(createTuto.url);
 
@@ -166,19 +188,29 @@ export class TutoService {
   }
 
   async setMetadata(idUser: number, idTuto: number): Promise<MetadataDTO> {
-    const tuto = await this.prisma.tuto.findFirst({
-      select: {
-        URL: true,
-        board: true,
-      },
-      where: {
-        id: idTuto,
-      },
-    });
-
-    if (!tuto) throw new BadRequestException("Le tuto n'existe pas");
-
-    await this.boardBelongtoUser(idUser, tuto.board.id);
+    const tuto = await this.prisma.tuto
+      .findFirstOrThrow({
+        select: {
+          URL: true,
+          board: true,
+        },
+        where: {
+          AND: [
+            {
+              id: idTuto,
+            },
+            {
+              board: {
+                idUser: idUser,
+              },
+            },
+          ],
+        },
+      })
+      .catch((err) => {
+        Logger.error(err, 'TutoService.setMetadata');
+        throw new BadRequestException("Le tuto n'existe pas");
+      });
 
     const metadata = await getMetaData(tuto.URL);
 
@@ -188,9 +220,11 @@ export class TutoService {
       },
       data: {
         title:
-          metadata.title.length > 191
-            ? metadata.title.substring(0, 188) + '...'
-            : metadata.title,
+          metadata.title != undefined
+            ? metadata.title.length > 191
+              ? metadata.title.substring(0, 188) + '...'
+              : metadata.title
+            : 'Nom du post',
         image: metadata.image,
       },
     });
@@ -202,80 +236,45 @@ export class TutoService {
   }
 
   async deleteTuto(idUser: number, idTuto: number): Promise<void> {
-    const idBoard = await this.prisma.tuto.findFirst({
-      select: {
-        idBoard: true,
-      },
-      where: {
-        id: idTuto,
-      },
-    });
-
-    if (!idBoard) throw new BadRequestException("Le tuto n'existe pas");
-
-    await this.boardBelongtoUser(idUser, idBoard.idBoard);
-
-    await this.prisma.tuto.delete({
-      where: {
-        id: idTuto,
-      },
-    });
+    await this.prisma.tuto
+      .delete({
+        where: {
+          id: idTuto,
+          board: {
+            idUser: idUser,
+          },
+        },
+      })
+      .catch((err) => {
+        Logger.error(err, 'TutoService.deleteTuto');
+        throw new BadRequestException("Le tuto n'existe pas");
+      });
   }
 
   async deleteTutos(idUser: number, idTuto: number[]): Promise<void> {
-    const idBoard = await this.prisma.tuto.findFirst({
-      select: {
-        idBoard: true,
-      },
-      where: {
-        id: idTuto[0],
-      },
-    });
-
-    if (!idBoard) throw new BadRequestException("Le tuto n'existe pas");
-
-    await this.boardBelongtoUser(idUser, idBoard.idBoard);
-
     await this.prisma.tuto.deleteMany({
       where: {
         id: {
           in: idTuto,
         },
+        board: {
+          idUser: idUser,
+        },
       },
     });
   }
 
-  async listSocial(): Promise<SocialNetwork[]> {
-    return await this.prisma.socialNetwork.findMany();
-  }
-
-  async boardBelongtoUser(idUser: number, idBoard: number): Promise<void> {
-    const boards = await this.getBoardOfUser(idUser);
-
-    const belongToUser = boards.filter((b) => b == idBoard);
-
-    if (!belongToUser.length)
-      throw new ForbiddenException('Board non existant pour cette utilisateur');
-  }
-
-  async getBoardOfUser(idUser: number): Promise<number[]> {
-    const boardObject = await this.prisma.board.findMany({
-      where: {
-        idUser: idUser,
-      },
-    });
-    const boardArray: number[] = [];
-    for (const b of boardObject) {
-      boardArray.push(b.id);
-    }
-    return boardArray;
-  }
-
-  isValidUrl(url: string): boolean {
+  private isValidUrl(url: string): boolean {
     try {
       return Boolean(new URL(url));
     } catch (error) {
       return false;
     }
+  }
+
+  private async getLongUrl(url: string): Promise<string> {
+    return await this.httpService.axiosRef
+      .get(url)
+      .then((res) => res.request._redirectable._currentUrl);
   }
 }
