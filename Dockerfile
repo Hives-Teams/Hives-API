@@ -4,12 +4,10 @@ RUN apk add --no-cache libc6-compat
 
 FROM base as dev
 ARG CACHEBUST=1
-RUN apk add --no-cache libc6-compat
 RUN apk --no-cache add git
 RUN npm i -g @nestjs/cli
 RUN npm i -g npm-check-updates
 USER node
-WORKDIR /develop
 EXPOSE 3000
 EXPOSE 9229
 

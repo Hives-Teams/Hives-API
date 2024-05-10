@@ -9,14 +9,11 @@ services:
       dockerfile: ./Dockerfile
     networks:
       - hives-network
-    volumes:
-      - .:/develop
     depends_on:
       - phpmyadmin
     ports:
       - 3000:3000
       - 9229:9229
-    tty: true
 
   test:
     container_name: hives-test
