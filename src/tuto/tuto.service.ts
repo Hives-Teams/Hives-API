@@ -167,14 +167,16 @@ export class TutoService {
 
     const metadata = await getMetaData(createTuto.url);
 
+    console.log(metadata);
+
     const data = createTuto.board.map((b) => {
       return {
         URL: createTuto.url,
         idSocial: socialCompatibility.id,
         idBoard: b,
         title:
-          metadata.title == 'TikTok - Make Your Day'
-            ? 'Nom du post'
+          metadata.title == undefined
+            ? 'Post'
             : metadata.title.length > 191
               ? metadata.title.substring(0, 188) + '...'
               : metadata.title,

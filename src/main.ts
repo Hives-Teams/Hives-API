@@ -25,7 +25,7 @@ async function bootstrap() {
       'http://localhost:3000/',
       'https://hives-dev-7da4a04fb1e4.herokuapp.com/',
     ],
-    methods: 'GET,HEAD,POST,DELETE',
+    methods: 'GET,HEAD,POST,DELETE,PUT',
     allowedHeaders: 'Content-Type, Accept',
   });
   app.use(helmet());
