@@ -34,6 +34,7 @@ services:
         condition: service_healthy
     container_name: hives-backend
     image: registry.hivesapp.fr/hives-backend:prod
+    pull_policy: always
     environment:
       JWT: "${JWT}"
       REFRESH: "${REFRESH}"
