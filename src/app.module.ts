@@ -12,8 +12,20 @@ import { BoardModule } from './board/board.module';
 import { TutoModule } from './tuto/tuto.module';
 import { MailModule } from './mail/mail.module';
 import { ScheduleModule } from '@nestjs/schedule';
-import { CronService } from './cron/cron.service';
 import { CronModule } from './cron/cron.module';
+
+function loadController(): any[] {
+  const modules = [];
+  if (!Boolean(Number(process.env.MAINTENANCE))) {
+    modules.push(AuthModule);
+    modules.push(PrismaModule);
+    modules.push(BoardModule);
+    modules.push(TutoModule);
+    modules.push(MailModule);
+    modules.push(CronModule);
+  }
+  return modules;
+}
 
 @Module({
   controllers: [AppController],
@@ -23,7 +35,6 @@ import { CronModule } from './cron/cron.module';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
-    CronService,
   ],
   imports: [
     ConfigModule.forRoot(),
@@ -34,12 +45,7 @@ import { CronModule } from './cron/cron.module';
       },
     ]),
     ScheduleModule.forRoot(),
-    AuthModule,
-    PrismaModule,
-    BoardModule,
-    TutoModule,
-    MailModule,
-    CronModule,
+    ...loadController(),
   ],
 })
 export class AppModule {}

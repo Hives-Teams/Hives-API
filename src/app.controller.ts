@@ -12,8 +12,8 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('minimumVersion')
-  minimumVersion(): string {
-    return '0.2.0';
+  @Get('maintenance')
+  async maintenance(): Promise<{ maintenance: boolean; message?: string }> {
+    return this.appService.maintenance();
   }
 }
