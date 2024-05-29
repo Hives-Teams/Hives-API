@@ -60,12 +60,11 @@ export class AuthService {
         id: newUser.id,
       };
     } catch (error) {
-      this.prisma.user.delete({
+      await this.prisma.user.delete({
         where: {
           id: newUser.id,
         },
       });
-      Logger.error(error);
       throw new BadRequestException(
         "Erreur lors de l'envoie du mail, votre compte n'a pas pu être créé",
       );

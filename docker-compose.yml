@@ -46,7 +46,8 @@ services:
       EMAIL: "${EMAIL}"
       CLIENT_ID_MAIL: "${CLIENT_ID_MAIL}"
       CLIENT_SECRET_MAIL: "${CLIENT_SECRET_MAIL}"
-      REFRESH_TOKEN_MAIL!: "${REFRESH_TOKEN_MAIL}"
+      REFRESH_TOKEN_MAIL: "${REFRESH_TOKEN_MAIL}"
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
@@ -57,6 +58,7 @@ services:
 
   db:
     image: mariadb:lts
+    container_name: hives-db
     restart: unless-stopped
     networks:
       - hives-network
