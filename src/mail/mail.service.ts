@@ -25,7 +25,7 @@ export class MailService {
     const accessToken: string = await new Promise((resolve, reject) => {
       oauth2Client.getAccessToken((err, token) => {
         if (err) {
-          Logger.error(err.response.data.error_description, 'mail.service');
+          Logger.error(err, 'mail.service');
           reject(`Erreur lors de la création du compte : email non envoyé`);
         }
         resolve(token);
