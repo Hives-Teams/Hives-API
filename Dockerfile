@@ -4,10 +4,19 @@ RUN apk add --no-cache libc6-compat
 
 FROM base as dev
 ARG CACHEBUST=1
-RUN apk --no-cache add git
+WORKDIR /workspace
+RUN apk update && apk --no-cache add git zsh libuser \
+  && touch /etc/login.defs \
+  && mkdir /etc/default \
+  && touch /etc/default/useradd \
+  # change the password of teh current user to ''
+  && passwd `whoami` -d \
+  # change the default shell to zsh for the current user
+  && echo '/bin/zsh' | lchsh `whoami` \
+  # install oh-my-zsh git prompt
+  && sh -c "$(wget https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)"
 RUN npm i -g @nestjs/cli
 RUN npm i -g npm-check-updates
-USER node
 EXPOSE 3000
 EXPOSE 9229
 
