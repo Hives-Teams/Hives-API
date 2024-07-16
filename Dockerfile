@@ -1,24 +1,12 @@
-FROM node:20-alpine as base
+FROM node:20-alpine3.20 as base
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
 
-FROM base as dev
-ARG CACHEBUST=1
-WORKDIR /workspace
-RUN apk update && apk --no-cache add git zsh libuser \
-  && touch /etc/login.defs \
-  && mkdir /etc/default \
-  && touch /etc/default/useradd \
-  # change the password of teh current user to ''
-  && passwd `whoami` -d \
-  # change the default shell to zsh for the current user
-  && echo '/bin/zsh' | lchsh `whoami` \
-  # install oh-my-zsh git prompt
-  && sh -c "$(wget https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)"
-RUN npm i -g @nestjs/cli
-RUN npm i -g npm-check-updates
-EXPOSE 3000
-EXPOSE 9229
+FROM mcr.microsoft.com/devcontainers/base:alpine-3.20 as dev
+COPY --from=base /usr/lib /usr/lib
+COPY --from=base /usr/local/lib /usr/local/lib
+COPY --from=base /usr/local/include /usr/local/include
+COPY --from=base /usr/local/bin /usr/local/bin
 
 FROM base as build
 WORKDIR /build

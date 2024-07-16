@@ -1,20 +1,4 @@
-version: '3.8'
 services:
-  dev:
-    container_name: hives-backend-dev
-    image: hives-backend:dev
-    build:
-      context: .
-      target: dev
-      dockerfile: ./Dockerfile
-    networks:
-      - hives-network
-    depends_on:
-      - phpmyadmin
-    ports:
-      - 3000:3000
-      - 9229:9229
-
   test:
     container_name: hives-test
     image: hives-backend:test
@@ -75,15 +59,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-
-  phpmyadmin:
-    depends_on:
-      - db
-    networks:
-      - hives-network
-    image: phpmyadmin:latest
-    ports:
-      - 8080:80
 
 volumes:
   hives-volumes:
