@@ -167,8 +167,6 @@ export class TutoService {
 
     const metadata = await getMetaData(createTuto.url);
 
-    console.log(metadata);
-
     const data = createTuto.board.map((b) => {
       return {
         URL: createTuto.url,

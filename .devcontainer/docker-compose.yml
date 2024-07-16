@@ -22,12 +22,11 @@ services:
     volumes:
       - hives-dev-data:/var/lib/postgresql/data
     environment:
-      MARIADB_RANDOM_ROOT_PASSWORD: '1'
-      MARIADB_PASSWORD: '123'
-      MARIADB_USER: 'docker'
+      MARIADB_ROOT_PASSWORD: '123'
       MARIADB_DATABASE: 'hivesbdd'
 
   phpmyadmin:
+    restart: unless-stopped
     networks:
       - hives-network
     image: phpmyadmin:latest

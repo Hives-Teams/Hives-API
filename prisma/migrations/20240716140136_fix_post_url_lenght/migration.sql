@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Tuto` MODIFY `URL` LONGTEXT NOT NULL;
